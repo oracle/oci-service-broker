@@ -27,7 +27,7 @@ These plans map directly to OCI Object Storage [Service Storage Tiers](https://d
 
 ## OCI User Permission requirement
 
-The OCI user for OCI Service Broker should have permission `manage` for resoruce type `buckets`
+The OCI user for OCI Service Broker should have permission `manage` for resource type `buckets`
 
 **Sample Policy:**
 
@@ -37,7 +37,7 @@ Allow group <SERVICE_BROKER_GROUP> to manage buckets in compartment <COMPARTMENT
 
 ## Service Provision Request Parameters
 
-The request parameters for Service provisioning are
+The request parameters for Service provisioning are:
 
 | Parameter        | Description                                                  | Type   | Mandatory |
 | ---------------- | ------------------------------------------------------------ | ------ | --------- |

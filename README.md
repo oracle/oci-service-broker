@@ -44,11 +44,11 @@ The source code for OCI Service Broker is written in java and the code, can be f
 gradle -b oci-service-broker/build.gradle clean build docker
 ```
 
- **Step 3:** The docker image oci-service-broker is available in the local docker repository. We should push this docker image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or customer's docker repository and refer this image in the Helm Chart.
+ **Step 3:** The docker image oci-service-broker is available in the local docker repository. Push the docker image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or your own docker repository and refer this image in the Helm Chart.
 
  **Step 4:** Install oci-service-broker chart
 
-Update the chart to use the image that was built in **Step 3** by editing the values `image.repository` and `image.tag` in the [values.yaml](charts/oci-service-broker/values.yaml) and deploy the chart.
+Update the [chart](charts/oci-service-broker) to use the image that was built in **Step 3** with values for `image.repository` and `image.tag` and deploy the chart.
 
 ## Documentation
 
@@ -56,7 +56,7 @@ See the [Documentation](charts/oci-service-broker/README.md#oci-service-broker) 
 
 ## Charts
 
-The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. Please refer to [Documentation](#Documentation) for detailed instructions.
+The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. Please refer to [Documentation](#documentation) for detailed instructions.
 
 ## Samples
 

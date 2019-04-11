@@ -6,6 +6,7 @@
   - [Install Service Catalog](docs/installation.md#install-service-catalog)
   - [Install svcat tool](docs/installation.md#install-svcat-tool)
   - [Deploy OCI Service Broker](docs/installation.md#deploy-oci-service-broker)
+    - [Building OCI Service Broker Image from the Source](docs/installation.md#building-oci-service-broker-image-from-the-source)
     - [Install service-broker chart](docs/installation.md#install-service-broker-chart)
       - [OCI credentials](docs/installation.md#oci-credentials)
       - [Quick Setup](docs/installation.md#quick-setup)

@@ -34,7 +34,7 @@ Right now we expose a `standard` plan where the user can specify CPU count and s
 
 ## OCI User Permission requirement
 
-The OCI user for OCI Service Broker should have permission `manage` for resoruce type `autonomous-data-warehouse`
+The OCI user for OCI Service Broker should have permission `manage` for resource type `autonomous-data-warehouse`
 
 **Sample Policy:**
 
@@ -44,7 +44,7 @@ Allow group <SERVICE_BROKER_GROUP> to manage autonomous-data-warehouse in compar
 
 ## Service Provision Request Parameters
 
-To provision, an ADW service user needs to provide the following details
+To provision, an ADW service user needs to provide the following details:
 
 | Parameter        | Description                                                         | Type   | Mandatory |
 | ---------------- | ------------------------------------------------------------------- | ------ | --------- |
@@ -53,10 +53,10 @@ To provision, an ADW service user needs to provide the following details
 | `compartmentId`  | The OCI compartment where the ADW instance will be provisioned.     | string | yes       |
 | `cpuCount`       | Number of CPU cores to have.                                        | int    | yes       |
 | `storageSizeTBs` | Size of the DB Storage in Terrabytes.                               | int    | yes       |
-| `password`       | ADW Service will pre-provision a DB Admin user when it provisions an ADW instance. The user needs to provide a password to be set for this Admin user.<br>The OCI ADW service requires the password to satisfy the below rules.<br><ul><li>The length should be between 12-18</li>A password must include an upper case, lower case, and special character.</ul> | string | yes       |
+| `password`       | ADW Service will pre-provision a DB Admin user when it provisions an ADW instance. The user needs to provide a password to be set for this Admin user.<br>The OCI ADW service requires the password to satisfy the below rules.<br><ul><li>The length should be 12 to 18 characters.</li><li>A password must include an upper case, lower case, and special character.</li></ul> | string | yes       |
 | `licenseType`    | Use your existing database software licenses(BYOL) or Subscribe to new database software licenses and the Database Cloud Service.<br>Valid values are:<ul><li>BYOL</li><li>NEW</li></ul>.                         | string | yes       |
 | `freeFormTags`   | free form tags that are to be used for tagging the ADW instance.    | object | no        |
-| `definedTags`    | The defined tags that are to be used for tagging the ADW instance.  | object | No        |
+| `definedTags`    | The defined tags that are to be used for tagging the ADW instance.  | object | no        |
 
 ## Service Binding Request Parameters
 
@@ -68,7 +68,7 @@ The user needs to pass the following parameters to get the binding details:
 
 ## Service Binding Response Credentials
 
-Users can create binding to get the credentials to use the ADW. The following files/details will be made available to the user
+Users can create binding to get the credentials to use the ADW. The following files/details will be made available to the user:
 
 | Parameter          | Description                                                              | Type   |
 | ------------------ | ------------------------------------------------------------------------ | ------ |
@@ -162,7 +162,7 @@ Once the ADW Instance is provisioned the applications will require credentials/c
 - Creating a ServiceBinding resource. This will create a Kubernetes secret with the credentials/configurations.
 - The user needs to mount the credentials/configurations into the containers so that application can use this configuration.
 
-A sample Kubernetes resource yaml to create binding.
+A sample Kubernetes resource yaml to create binding:
 
 ```bash
 cat oci-service-broker/samples/adw/adw-binding-plain.yaml
@@ -198,7 +198,7 @@ When the ServiceBinding request completes successfully the user should see a sec
 kubectl get secrets adw-demo-binding -o yaml
 ```
 
-Output
+Output:
 
 ```yaml
 apiVersion: v1
@@ -341,7 +341,7 @@ View the logs
 kubectl logs $(kubectl get pod | grep ^adw-demo | grep Running | cut -d" " -f 1)
 ```
 
-Output
+Output:
 
 ```plain
 -------- Oracle JDBC Connection Testing ------
