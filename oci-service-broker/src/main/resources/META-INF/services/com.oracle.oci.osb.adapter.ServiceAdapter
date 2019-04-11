@@ -1,0 +1,8 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+
+com.oracle.oci.osb.adapters.objectstorage.ObjectStorageServiceAdapter
+com.oracle.oci.osb.adapters.adb.atp.ATPServiceAdapter
+com.oracle.oci.osb.adapters.adb.adw.ADWServiceAdapter

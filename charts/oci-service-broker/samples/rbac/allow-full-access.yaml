@@ -1,0 +1,15 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+# Allow full access for ServiceInstance and ServiceBinding resources.
+# Any users with this role will have the ability to trigger instance
+# creation/update, deleting of the OCI Services managed by OCI Service Broker.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: servicecatalog.k8s.io:service:all
+rules:
+- apiGroups: ["servicecatalog.k8s.io"]
+  resources: ["ServiceInstance","ServiceBinding"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

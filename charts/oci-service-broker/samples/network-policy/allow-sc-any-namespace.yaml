@@ -1,0 +1,21 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+# Allow access to OCI Service Broker only from Service Catalog.The Service Catalog 
+# can be run from any namespace. Other Pods including the ones in the same namespace
+# cannot access OCI Service Broker.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-service-catalog
+spec:
+  podSelector:
+    matchLabels:
+      app: oci-service-broker
+  ingress:
+  - from:
+      - namespaceSelector: {}
+      - podSelector:
+          matchLabels:
+            app: catalog-catalog-controller-manager

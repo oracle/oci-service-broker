@@ -1,0 +1,23 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ template "oci-service-broker-chart.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.servicePort }}
+      targetPort: {{ .Values.service.containerPort }}
+      protocol: TCP
+      name: {{ .Values.service.name }}
+  selector:
+    app: {{ template "oci-service-broker-chart.name" . }}
+    release: {{ .Release.Name }}

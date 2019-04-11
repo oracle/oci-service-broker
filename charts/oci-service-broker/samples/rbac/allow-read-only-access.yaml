@@ -1,0 +1,15 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+# Allow read-only access for ServiceInstance and ServiceBinding resources.
+# User with this roles will only be able list/view the resource details including
+# the status of the resource.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: servicecatalog.k8s.io:service:read-only
+rules:
+- apiGroups: ["servicecatalog.k8s.io"]
+  resources: ["ServiceInstance","ServiceBinding"]
+  verbs: ["get", "list", "watch"]

@@ -1,0 +1,14 @@
+oci-service-broker/.gradle/
+oci-service-broker/.classpath
+oci-service-broker/.project
+oci-service-broker/.settings/
+oci-service-broker/bin/
+/oci-service-broker/out/
+/oci-service-broker/libs/
+**/.gradle/
+**/.idea/
+**/.vscode/
+**/*.iml
+**/build/
+**/oci_api_key.pem
+**/gradle.properties

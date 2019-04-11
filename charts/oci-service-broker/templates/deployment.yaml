@@ -1,0 +1,222 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+{{- $secretName:= .Values.ociCredentials.secretName -}}
+{{- $tlsEnabled:= .Values.tls.enabled -}}
+{{- $jvmArgs:= "" -}}
+{{- $serviceTags:= "" -}}
+
+{{- if .Values.jvmOptions }}
+  {{- range $key, $val := .Values.jvmOptions}}
+{{-  $jvmArgs := printf "%s -D%s=%s" $jvmArgs $key $val -}}
+  {{- end }}
+{{- end }}
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "oci-service-broker-chart.fullname" . }}
+  labels:
+    app: {{ template "oci-service-broker-chart.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "oci-service-broker-chart.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: oci-osb
+      containers:
+        - name: {{ .Chart.Name }}
+          command:
+           - "/oci-service-broker/start-broker.sh"
+           - "--port"
+           - "{{ .Values.service.containerPort }}"
+           - "--privatekey"
+           - "/var/run/oci-service-broker/privatekey"
+           - "--tlsEnabled"
+           - "{{ .Values.tls.enabled }}"
+           - "--log.configfile"
+           - "/oci-service-broker/config/jul-config.properties"
+           - "--logLevel"
+           - "{{ .Values.logLevel.broker }}"
+           - "--ociSdkLogLevel"
+           - "{{ .Values.logLevel.ociSDK }}"
+           - "--jvmProps"
+           - "{{$jvmArgs}}"
+           - "--storeType"
+           - "{{ .Values.storage.type }}"
+           - "--apiServerCaCerts"
+           - "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+{{- if (eq .Values.storage.type "etcd") }}
+{{- if .Values.storage.etcd.useEmbedded }}
+           - "--etcd.servers"
+           - "http://localhost:2379"
+           - "--etcd.client.tls.enabled"
+           - "false"
+{{- else }}
+           - "--etcd.servers"
+           - "{{ .Values.storage.etcd.servers }}"
+           - "--etcd.client.tls.enabled"
+           - "{{ .Values.storage.etcd.tls.enabled }}"
+{{- end }}
+{{- end }}
+
+{{- if .Values.serviceTags }}
+  {{- range $key, $val := .Values.serviceTags}}
+           - "--serviceTag"
+           - "{{ printf "%s=%s" $key $val -}}"
+  {{- end }}
+{{- end }}
+          securityContext:
+            fsGroup: 999
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.containerPort }}
+          env:
+          - name: TENANCY
+            valueFrom:
+              secretKeyRef:
+                name: {{$secretName}}
+                key: tenancy
+          - name: REGION
+            valueFrom:
+              secretKeyRef:
+                name: {{$secretName}}
+                key: region
+          - name: USER
+            valueFrom:
+              secretKeyRef:
+                name: {{$secretName}}
+                key: user
+          - name: FINGERPRINT
+            valueFrom:
+              secretKeyRef:
+                name: {{$secretName}}
+                key: fingerprint
+          - name: PASSPHRASE
+            valueFrom:
+              secretKeyRef:
+                name: {{$secretName}}
+                key: passphrase
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          volumeMounts:
+          - mountPath: /var/run/oci-service-broker
+            name: oci-service-broker-private-key
+            readOnly: true
+          - mountPath: /oci-service-broker/config
+            name: log-config
+            readOnly: true
+{{- if $tlsEnabled }}
+          - mountPath: /oci-service-broker/tlsBundle
+            name: oci-service-broker-tls-bundle
+            readOnly: true
+{{- end }}
+{{- if and .Values.storage.etcd.tls.enabled (not .Values.storage.etcd.useEmbedded) }}
+          - mountPath: /oci-service-broker/etcdTlsSecret
+            name: etcd-tls-secret
+            readOnly: true
+{{- end }}
+{{- if and (eq .Values.storage.type "etcd") .Values.storage.etcd.useEmbedded }}
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.service.containerPort }}
+              path: /health
+{{- if $tlsEnabled }}
+              scheme: HTTPS
+{{- else }}
+              scheme: HTTP
+{{- end }}
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              port: {{ .Values.service.containerPort }}
+              path: /health
+{{- if $tlsEnabled }}
+              scheme: HTTPS
+{{- else }}
+              scheme: HTTP 
+{{- end }}
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 3
+        - name: etcd
+          image: {{ .Values.storage.etcd.image }}
+          imagePullPolicy: {{ .Values.storage.etcd.imagePullPolicy }}
+          env:
+          - name: ETCD_DATA_DIR
+            value: /etcd-data-dir
+          command:
+          - /usr/local/bin/etcd
+          - --listen-client-urls
+          - http://0.0.0.0:2379
+          - --advertise-client-urls
+          - http://localhost:2379
+          ports:
+          - containerPort: 2379
+          volumeMounts:
+          - name: etcd-data-dir
+            mountPath: /etcd-data-dir
+          readinessProbe:
+            httpGet:
+              port: 2379
+              path: /health
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              port: 2379
+              path: /health
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+{{- end }}
+      volumes:
+      - name: oci-service-broker-private-key
+        secret:
+          secretName: {{$secretName}}
+          items:
+          - key: privatekey
+            path: privatekey
+      - name: log-config
+        configMap:
+          name: log-config-{{ .Release.Name }}
+{{- if $tlsEnabled }}
+      - name: oci-service-broker-tls-bundle
+        secret:
+          secretName: {{ .Values.tls.secretName }}
+{{- end }}
+{{- if and (eq .Values.storage.type "etcd") }}
+{{- if .Values.storage.etcd.useEmbedded }}
+      - name: etcd-data-dir
+        emptyDir: {}
+{{- else if .Values.storage.etcd.tls.enabled }}
+      - name: etcd-tls-secret
+        secret:
+          secretName: {{ .Values.storage.etcd.tls.clientCertSecretName }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log-config-{{ .Release.Name }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name | quote }}
+data:
+{{ (.Files.Glob "config/jul-config.properties").AsConfig | indent 2 }}

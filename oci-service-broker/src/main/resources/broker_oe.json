@@ -1,0 +1,19 @@
+{
+  "Identity": [
+    {
+      "username": "",
+      "uid": "",
+      "groups": [
+        ""
+      ],
+      "extra": {
+        "contexttype": [
+          ""
+        ],
+        "tenancyid": [
+          ""
+        ]
+      }
+    }
+  ]
+}

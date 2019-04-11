@@ -1,0 +1,241 @@
+{
+  "services": [
+    {
+      "name": "object-store-service",
+      "id": "4a39466b-211d-48e2-a86b-db022c10fe59",
+      "description": "Object Storage Service",
+      "tags": [
+        "objectstore",
+        "archive"
+      ],
+      "bindable": true,
+      "instances_retrievable": true,
+      "bindings_retrievable": false,
+      "asyncProvision": false,
+      "asyncBinding": false,
+      "asyncUpdate": false,
+      "asyncDelete": false,
+      "metadata": {
+        "provider": {
+          "name": "Oracle Cloud Infrastructure"
+        },
+        "listing": {
+          "imageUrl": "",
+          "longDescription": "Provision and use an Object Storage Bucket"
+        },
+        "displayName": "Oracle Object Storage Service"
+      },
+      "plan_updateable": true,
+      "plans": [
+        {
+          "name": "standard",
+          "id": "k1d643051-c407-4f3f-8527-82cee9ab45f6",
+          "description": "A Standard type Object Storage",
+          "free": false,
+          "schemas": {
+            "service_instance": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "description": "Name of the bucket",
+                      "type": "string"
+                    },
+                    "compartmentId": {
+                      "description": "The OCID of the compartment to which the bucket should belong",
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "description": "The namespace to which bucket should belong",
+                      "type": "string"
+                    },
+                    "storageTier": {
+                      "description": "The storage tier of the bucket, can be Standard/Archive",
+                      "type": "string"
+                    },
+                    "publicAccessType": {
+                      "description": "The public access type of the bucket, can be NoPublicAccess/ObjectRead/ObjectReadWithoutList",
+                      "type": "string"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "metadata": {
+                      "description": "Metadata of the bucket",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags": {
+                      "description": "Defined Tags",
+                      "type": "object"
+                    }
+                  }
+                }
+              },
+              "update": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "publicAccessType": {
+                      "description": "The public access type of the bucket, can be NoPublicAccess/ObjectRead/ObjectReadWithoutList",
+                      "type": "string"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "metadata": {
+                      "description": "Metadata of the bucket",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags": {
+                      "description": "Defined Tags",
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "service_binding": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "generatePreAuth": {
+                      "description": "Generate a Pre-Authenticated URL",
+                      "type": "boolean"
+                    },
+                    "expiryTime": {
+                      "description": "The expiry time of the Pre-Authenticated URL",
+                      "type": "date"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "archive",
+          "id": "ffd4b96d-4910-4427-bfd4-7899f7f6097a",
+          "description": "An Archive type Object Storage",
+          "free": false,
+          "schemas": {
+            "service_instance": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "description": "Name for the bucket",
+                      "type": "string"
+                    },
+                    "compartmentId": {
+                      "description": "The OCID of the compartment to which the bucket should belong",
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "description": "The namespace to which the bucket should belong",
+                      "type": "string"
+                    },
+                    "storageTier": {
+                      "description": "The storage tier of the bucket, can be Standard/Archive",
+                      "type": "string"
+                    },
+                    "publicAccessType": {
+                      "description": "The public access type of the bucket, can be NoPublicAccess/ObjectRead/ObjectReadWithoutList",
+                      "type": "string"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "metadata": {
+                      "description": "Metadata of the bucket",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags": {
+                      "description": "Defined Tags",
+                      "type": "object"
+                    }
+                  }
+                }
+              },
+              "update": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "publicAccessType": {
+                      "description": "The public access type of the bucket, can be NoPublicAccess/ObjectRead/ObjectReadWithoutList",
+                      "type": "string"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "metadata": {
+                      "description": "Metadata of the bucket",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags": {
+                      "description": "Defined Tags",
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "service_binding": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "generatePreAuth": {
+                      "description": "Generate a Pre-Authenticated URL",
+                      "type": "boolean"
+                    },
+                    "expiryTime": {
+                      "description": "The expiry time of the Pre-Authenticated URL",
+                      "type": "date"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

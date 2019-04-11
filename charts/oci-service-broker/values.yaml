@@ -1,0 +1,77 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+
+# Default values for oci-service-broker-chart. Please read the installation docs for more information about below parameters
+
+# Number of replicas of the broker
+replicaCount: 1
+
+# Image of the broker
+image:
+  # Repository of the image
+  repository: iad.ocir.io/oci-cnp-dev/oci-service-broker
+  # Tag of the image
+  tag:  1.0.0
+  # The image pull policy
+  pullPolicy: Always
+
+# OCI Service Broker is exposed as a Kubernetes Service, the details of which are configured below
+service:
+  # Name of the service
+  name: service-broker
+  # Type of the Kubernetes Service
+  type: ClusterIP
+  # The port in the container to which the service is mapped, typically this needs not be changed
+  containerPort: 9998
+  # The Service port
+  servicePort: 8080
+
+# OCI Service Broker requires the credentials of an OCI user which is used to connect to the various OCI Services
+ociCredentials:
+  secretName: ""
+
+# The storage type for service metadata
+storage:
+  # Use etcd as storage type, other storege types may be supported in the future
+  type: etcd
+  etcd:
+    # Use an embedded etcd container in the OCI Service Broker pod.
+    # DO NOT use this in PRODUCTION
+    useEmbedded: false
+    # The etcd image to use
+    image: quay.io/coreos/etcd:latest
+    # imagePullPolicy for the etcd; valid values are "IfNotPresent",
+    # "Never", and "Always"
+    imagePullPolicy: Always
+    # Configure the comma separated etcd server URLs here
+    servers: 
+    # Configure tls related parameters below
+    tls:
+      # Set to true if tls needs to be used to talk to the etcd server
+      enabled: true
+      # If etcd tls is enabled you need to provide name of secret which stores 3 keys:
+      # etcd-client-ca.crt - SSL Certificate Authority file used to secure etcd communication.
+      # etcd-client.crt - SSL certification file used to secure etcd communication.
+      # etcd-client.key - SSL key file used to secure etcd communication.
+      clientCertSecretName: 
+
+# Any key value pair under the serviceTags section will be added as tags in the 
+serviceTags:
+  # It is recommended to set the ClusterId as this will be tagged in the services
+  # created by OCI Service Broker. In case of Oracle Clusters(OKE), the ClusterId
+  # is automatically discovered and hence the property need not be set explictly.
+  # ClusterId:
+
+# TLS related parameters
+tls: 
+  # Change this parameter to true if the Broker needs to be TLS enabled
+  enabled: true
+  # The Kubernetes secret which contains the PKCS#12 file and password required to configure TLS
+  secretName: ""
+
+# Log Levels are configured below
+logLevel:
+  ociSDK: DEBUG
+  broker: DEBUG

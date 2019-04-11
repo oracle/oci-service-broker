@@ -1,0 +1,147 @@
+{
+  "services": [
+    {
+      "name": "adw-service",
+      "id": "adw45fe6-fqxe-261g-k172-a7d1x277112d",
+      "description": "Autonomous Data Warehouse Service",
+      "tags": [
+        "adw"
+      ],
+      "bindable": true,
+      "instances_retrievable": true,
+      "bindings_retrievable": false,
+      "asyncProvision": true,
+      "asyncBinding": false,
+      "asyncUpdate": true,
+      "asyncDelete": true,
+      "metadata": {
+        "provider": {
+          "name": "Oracle Cloud Infrastructure"
+        },
+        "listing": {
+          "imageUrl": "https://cloud.oracle.com/opc/paas/images/autonomous-database_w_72.png",
+          "longDescription": "OCI Autonomous Data Warehouse service"
+        },
+        "displayName": "Oracle Autonomous Data Warehouse Service"
+      },
+      "plan_updateable": true,
+      "plans": [
+        {
+          "name": "standard",
+          "id": "35678215-23xq-n373-fsls-cbf782ams8kp",
+          "description": "OCI Autonomous Data Warehouse",
+          "free": false,
+          "schemas": {
+            "service_instance": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "Database",
+                  "properties": {
+                    "name": {
+                      "description": "Display Name or the ADW instance",
+                      "type": "string"
+                    },
+                    "compartmentId": {
+                      "description": "The OCID of the compartment",
+                      "type": "string"
+                    },
+                    "dbName": {
+                      "description": "Database Name",
+                      "type": "string"
+                    },
+                    "cpuCount": {
+                      "description": "CPU Count",
+                      "type": "integer"
+                    },
+                    "storageSizeTBs": {
+                      "description": "Storage Size In TBs",
+                      "type": "integer"
+                    },
+                    "password": {
+                      "description": "Password for Admin User",
+                      "type": "string"
+                    },
+                    "licenseType": {
+                      "description": "Use your existing database software licenses(BYOL) or Subscribe to new database software licenses and the Database Cloud Service",
+                      "type": "string",
+                      "pattern": "^(byol|new)$"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags":{
+                      "description":"Defined Tags",
+                      "type":"object",
+                      "additionalProperties":{
+                        "type":"object",
+                        "additionalProperties":{
+                          "type":"string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "update": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "description": "Display Name or the ADW instance",
+                      "type": "string"
+                    },
+                    "cpuCount": {
+                      "description": "CPU Count",
+                      "type": "integer"
+                    },
+                    "storageSizeTBs": {
+                      "description": "Storage Size In TBs",
+                      "type": "integer"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags":{
+                      "description":"Defined Tags",
+                      "type":"object",
+                      "additionalProperties":{
+                        "type":"object",
+                        "additionalProperties":{
+                          "type":"string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "service_binding": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "walletPassword": {
+                      "description": "Password for the oracle wallet",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
+#
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+ name: testbucket
+spec:
+ clusterServiceClassExternalName: object-store-service
+ clusterServicePlanExternalName: standard
+ parameters:
+   name: testbucket
+   compartmentId: CHANGE_COMPARTMENT_OCID_HERE
+   namespace: CHANGE_NAMESPACE_HERE
+   freeformTags:
+      Created: demo
