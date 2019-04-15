@@ -6,7 +6,7 @@
 * [Install Service Catalog](#install-service-catalog)
 * [Install svcat tool](#install-svcat-tool)
 * [Deploy OCI Service Broker](#deploy-oci-service-broker)
-  * [Building OCI Service Broker Image from the Source](#building-oracle-service-broker-image-from-the-source)
+  * [Build OCI Service Broker Image from the Source](#build-oci-service-broker-image-from-the-source)
   * [Install oci-service-broker chart](#install-oci-service-broker-chart)
     * [OCI credentials](#oci-credentials)
     * [Quick Setup](#quick-setup)
@@ -53,10 +53,7 @@ Install the Kubernetes Service Catalog helm chart:
 helm install svc-cat/catalog --set controllerManager.verbosity="4" --timeout 300 --name catalog --version 0.1.34
 ```
 
-Please note that the above command will run the Service Catalog using an embedded `etcd` instance. It is not recommended to run the Service Catalog using an embedded etcd instance in production environments, instead a separate etcd cluster should be setup and used by the Service Catalog. The open source [etcd operator project](https://github.com/coreos/etcd-operator) or the [bitnami etcd helm chart](https://github.com/bitnami/charts/tree/master/bitnami/etcd) may be used to setup a production quality etcd cluster.
-
-
-production quality `etcd` cluster should be setup using  or the  and used by the Service Catalog.
+Please note that the above command will run the Service Catalog using an embedded `etcd` instance. It is not recommended to run the Service Catalog using an embedded etcd instance in production environments, instead a separate etcd cluster should be setup and used by the Service Catalog. The open source [etcd operator project](https://github.com/coreos/etcd-operator) or a commercial offering may be used to setup a production quality etcd cluster.
 
 ## Install svcat tool
 
@@ -70,29 +67,29 @@ brew update && brew install kubernetes-service-catalog-client
 
 ## Deploy OCI Service Broker
 
-### Building OCI Service Broker Image from the Source
+### Build OCI Service Broker Image from the Source
 
 After cloning the `oci-service-broker` source code run following command to build the Docker Image for OCI Service Broker
 
 ```bash
-cd oci-service-broker
+cd oci-service-broker/oci-service-broker
 
 #The OCI Service Broker internally uses [oci-java-sdk](https://github.com/oracle/oci-java-sdk) to manage OCI services. But they are not published to any public maven repositories yet. In order to build the project, users are required to download oci-java-sdk archive file and add the dependent libraries to libs directory of oci-service-broker. Below command will download the required libraries and add to the libs directory.
 
 bash download_SDK_libs.sh
 
-#Gradle is the build tool used in OCI Service Broker. Recommended version v4.10.3. Please execute the below command to compile, build and generate a docker image.
+#Gradle is the build tool used in OCI Service Broker. Please execute the below command to compile, build and generate a docker image.
 
 gradle -b build.gradle clean build docker
 ```
 
 If gradle build failed with error('Task :spotbugsMain FAILED'), please provide '-x spotbugsMain' option in above command. This is known issue due to latest JDK version.
 
-After successful build, a new docker image will be created having name 'oci-service-broker'. User need to push this image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or their docker repository and refer the same in the Chart during deployment.
+After successful build, a new docker image will be created having name 'oci-service-broker'. Push this image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or your own docker repository and refer this image in the Chart during deployment.
 
 ### Install oci-service-broker chart
 
-The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes. The chart is available at [charts/oci-service-broker](charts/oci-service-broker) directory.
+The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes. The chart is available at [charts/oci-service-broker](../) directory.
 
 #### OCI credentials
 
@@ -100,15 +97,15 @@ The OCI Service Broker needs OCI user credentials details to provision and manag
 
 **Important:** Please check the guidelines [here](security.md#restrict-access-of-the-oci-user-used-by-service-broker) for configuring the OCI user credentials for OCI Service Broker.
 
-The secret should have the below Keys and respective values for it.
+The secret should have the below Keys and respective values for it:
 
 | Key | Description |
 | --------- | ----------- |
 | `tenancy` | The OCID of your tenancy |
 | `fingerprint`    | The Fingerprint of your OCI user |
 | `user`    | OCID of the user |
-| `passphrase`    | The passphrase of the private key(if passphrase is set then set the value to an empty string) |
-| `privatekey`    | The OCI User private key` |
+| `passphrase`    | The passphrase of the private key(if passphrase is set, then set the value to an empty string) |
+| `privatekey`    | The OCI User private key |
 | `region`    | The region in which the OKE cluster is running. The value should be in OCI region format. Example: us-ashburn-1 |
 
 Run the below command to create Secret by name `ociCredentials`. (Replace values with your user credentials)
@@ -142,7 +139,7 @@ It is strongly recommended to configure OCI Service Broker with [TLS](#enable-tl
 
 #### etcd for persistence
 
-The OCI Service Broker stores service instance related metadata in an etcd instance. By default an embedded etcd instance is available in this chart and will be used for storing the same. But it is NOT recommended to use the embedded etcd instance in PRODUCTION environments. 
+The OCI Service Broker stores service instance related metadata in an etcd instance. By default an embedded etcd instance is available in this chart and will be used for storing the same. But it is NOT recommended to use the embedded etcd instance in PRODUCTION environments.
 
 The etcd cluster that was setup to be used by the Service Catalog, as explained in the [Install Service Catalog](#install-service-catalog) section above can be shared by the OCI Service Broker as well. Otherwise, a separate etcd cluster can be setup to be used by the OCI Service Broker. The values under `storage.etcd` should be used to configure etcd.
 
@@ -155,7 +152,7 @@ The etcd cluster that was setup to be used by the Service Catalog, as explained 
 | `storage.etcd.tls.enabled`    | Set this value to true if TLS needs to be used to communicate with the etcd servers  |
 | `storage.etcd.tls.clientCertSecretName`    | The Kubernetes secret containing the necessary files to communicate with etcd using TLS |
 
-If TLS is to be used to communicate with the etcd servers, another Kubernetes secret needs to be provided. The secret should have the following values
+If TLS is to be used to communicate with the etcd servers, another Kubernetes secret needs to be provided. The secret should have the following values:
 
 | File Name | Description |
 | --------- | ----------- |
@@ -180,7 +177,7 @@ client needs to use to communicate with an etcd server in a TLS setup.
 
 #### Enable TLS
 
-In order to enable TLS for OCI Service Broker, the following values needs to be configured.
+In order to enable TLS for OCI Service Broker, the following values needs to be configured:
 
 | values | Description |
 | --------- | ----------- |
@@ -223,18 +220,18 @@ helm install  charts/oci-service-broker/. --name oci-service-broker \
 
 ## RBAC
 
-If RBAC is enabled in your cluster then the following permissions are required by the user
+If RBAC is enabled in your cluster then the following permissions are required by the user:
 
 ### RBAC required for OCI Service Broker
 
 During chart installation, a service account by the name 'oci-osb' is created and assigned to the  OCI Service Broker pod.
 
-OCI Service Broker also requires access to the 'nodes' API in Kubernetes in order
-to discover the ClusterId of the Kubernetes cluster (ClusterId is used to tag the services created by the OCI Service Broker for auditing purposes). ClusterId is part of node labels in Oracle Container Engine for Kubernetes(OKE). Hence the required RBAC rules i.e. RBAC ClusterRole and RBAC ClusterRoleBinding are also created during chart installation.
+OCI Service Broker also requires access to the Kubernete's 'nodes' API in order
+to discover the ClusterId of the Kubernetes cluster. ClusterId is used to tag the services created by the OCI Service Broker for auditing purposes. ClusterId is part of node labels in Oracle Container Engine for Kubernetes(OKE). The OCI Service Broker chart creates a [ClusterRole](../templates/role.yaml) and [ClusterRoleBinding](../templates/role-binding.yaml) that allows the OCI Service Broker to read the node labels and read the ClusterId.
 
 ### RBAC Permissions for registering OCI Service Broker
 
-Typically registering a OCI Service Broker is done by cluster-admin. The normal users then create/manage services offered by the Broker. Please ensure that the user that is registering the broker has `cluster-admin` role.
+Typically, registering a OCI Service Broker is done by cluster-admin. The normal users then create/manage services offered by the Broker. Please ensure that the user that is registering the broker has `cluster-admin` role.
 
 Sample command for mapping `cluster-admin` to an user:
 
@@ -248,7 +245,7 @@ Refer [Restrict access to Service Catalog resources using RBAC](security.md#rest
 
 ## Register OCI Service Broker
 
-Sample files for various services are available under [`oci-service-broker/samples`](charts/oci-service-broker/samples) directory.
+Sample files for various services are available under [`oci-service-broker/samples`](../samples) directory.
 
 Create a `ClusterServiceBroker` resource.
 

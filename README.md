@@ -19,44 +19,13 @@ The OCI Service Broker is an open source implementation of [Open service broker 
 
 See the [Installation](charts/oci-service-broker/docs/installation.md) instructions for detailed installation and configuration of OCI Service Broker.
 
-### Build
-
-**Pre-requisites:**
-
-* JDK 10 & above
-* [Gradle](https://gradle.org/)
-   (Recommended Gradle version: v4.10.3)
-* Docker
-
-The source code for OCI Service Broker is written in java and the code, can be found [here](oci-service-broker).
-
- **Step 1:** Download [oci-javasdk v1.3.1](https://github.com/oracle/oci-java-sdk/releases/download/v1.3.1/oci-java-sdk.zip) archive file.
-
- The OCI Service Broker internally uses [oci-java-sdk](https://github.com/oracle/oci-java-sdk) to manage OCI services. But they are not published to any public maven repositories yet. In order to build the project, users are required to download oci-java-sdk archive file and add the dependent libraries to libs directory of oci-service-broker. The can be done by running [download_SDK_libs.sh](oci-service-broker/download_SDK_libs.sh) script.
-
- ```bash
- bash oci-service-broker/download_SDK_libs.sh
- ```
-
- **Step 2:** Compile and build oci-service-broker docker image. Gradle Build Tool is used for building the oci-service-broker.
-
-```bash
-gradle -b oci-service-broker/build.gradle clean build docker
-```
-
- **Step 3:** The docker image oci-service-broker is available in the local docker repository. We should push this docker image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or customer's docker repository and refer this image in the Helm Chart.
-
- **Step 4:** Install oci-service-broker chart
-
-Update the chart to use the image that was built in **Step 3** by editing the values `image.repository` and `image.tag` in the [values.yaml](charts/oci-service-broker/values.yaml) and deploy the chart.
-
 ## Documentation
 
 See the [Documentation](charts/oci-service-broker/README.md#oci-service-broker) for complete details on installation, security and service related configurations of OCI Service Broker.
 
 ## Charts
 
-The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. Please refer to [Documentation](#Documentation) for detailed instructions.
+The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. Please refer to [Documentation](#documentation) for detailed instructions.
 
 ## Samples
 

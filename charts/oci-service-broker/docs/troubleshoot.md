@@ -31,7 +31,7 @@ There are multiple reasons for the communication failure between Service Catalog
 
 #### Invalid OCI Credentials
 
-User details in the Kuberentes secret for OCI Service Broker is having invalid credentials. As part of the [OCI Credentials](charts/oci-service-broker/docs/installation.md#oci-credentials) in Installation instructions. This might lead to OCI Service Broker pod in `CrashLoopBackOff` status
+User details in the Kuberentes secret for OCI Service Broker is having invalid credentials. As part of the [OCI Credentials](../docs/installation.md#oci-credentials) in Installation instructions. This might lead to OCI Service Broker pod in `CrashLoopBackOff` status
 
 ```bash
 kubectl get pods
@@ -42,7 +42,7 @@ oci-service-broker-oci-service-broker-57b76b66f7-g269x   0/2     CrashLoopBackOf
 ```
 
 **Solution:**
-Ensure the [OCI Credentials Kubernetes secret](charts/oci-service-broker/docs/installation.md#oci-credentials)  is created and the user credentials used for creating Kubernetes secret is valid.
+Ensure the [OCI Credentials Kubernetes secret](../docs/installation.md#oci-credentials) is created and the user credentials used for creating Kubernetes secret is valid.
 
 ```bash
 kubectl create secret generic ocicredentials \
@@ -54,7 +54,7 @@ kubectl create secret generic ocicredentials \
 --from-file=privatekey=<PATH_OF_USER_PRIVATE_API_KEY>
 ```
 
-#### Service Catalog and Service Broker are in different namesapces
+#### Service Catalog and Service Broker are in different namespaces
 
 Kubernetes Service Catalog and OCI Service Broker are in different namespaces. For example
 
@@ -67,19 +67,21 @@ different-ns   oci-service-broker-oci-service-broker-57b76b66f7-lnvmw   2/2     
 ```
 
 **Solution:**
-User should ensure after OCI Service Broker is up and running using the below command. 
+
+If the Kubernetes Service Catalog and OCI Service Broker are running in different Kubernetes namespaces then, the below modifications need to be made to the `oci-service-broker.yaml` while [registering the `oci-service-broker`](installation.md#register-oci-service-broker):
 
 ```bash
-$ kubectl get pods
-NAME                                                     READY   STATUS    RESTARTS   AGE
-catalog-catalog-apiserver-5bd5cbffd7-76629               2/2     Running   11         7d
-catalog-catalog-controller-manager-f7cdfcd9c-7jrp7       1/1     Running   0          7d
-oci-service-broker-oci-service-broker-57b76b66f7-zd855   2/2     Running   0          1d
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ClusterServiceBroker
+metadata:
+  name: oci-service-broker
+spec:
+  url: http://oci-service-broker.<NAMESPACE_OF_OCI_SERVICE_BROKER>:8080
 ```
 
 #### Missing OCI Credentials Secret
 
-Kuberentes secret for OCI Service Broker is not created. As part of the [OCI Credentials](charts/oci-service-broker/docs/installation.md#oci-credentials) in Installation instructions. This might lead to OCI Service Broker pod in `ContainerCreating` status
+Kuberentes secret for OCI Service Broker is not created. As part of the [OCI Credentials](installation.md#oci-credentials) in Installation instructions. This might lead to OCI Service Broker pod in `ContainerCreating` status
 
 ```bash
 kubectl get pods
@@ -90,16 +92,21 @@ oci-service-broker-oci-service-broker-57b76b66f7-g269x   0/2     ContainerCreati
 ```
 
 **Solution:**
-Customer must ensure both the Kubernetes Service Catalog and OCI Service Broker should run in the same namespace. If in case, both cannot run in the same namespace. We need to make below modifications to the `oci-service-broker.yaml` while [registering the `oci-service-broker`](charts/oci-service-broker/docs/installation.md#register-oci-service-broker)
+Ensure the [OCI Credentials Kubernetes secret](installation.md#oci-credentials)  is created and passed correctly in the `helm` install command.
+
+Command to check the secret:
 
 ```bash
-apiVersion: servicecatalog.k8s.io/v1beta1
-kind: ClusterServiceBroker
-metadata:
-  name: oci-service-broker
-spec:
-  url: http://oci-service-broker.<NAMESPACE_OF_OCI_SERVICE_BROKER>:8080
+kubectl get secret ocicredentials -o yaml
 ```
+
+In the helm install command the secret should have been passed as shown below:
+
+ ```bash
+ helm install charts/oci-service-broker/.  --name oci-service-broker \
+  --set ociCredentials.secretName=ocicredentials \
+  ...
+ ```
 
 ## Common Steps to Debug
 
@@ -116,7 +123,8 @@ kubectl logs $(kubectl get pods | grep oci-service-broker | cut -d" " -f1) -c oc
 ```
 kubectl logs $(kubectl get pods | grep oci-service-broker | cut -d" " -f1) -c oci-service-broker | grep "Authentication failed"
 ```
-If we see the above "Authentication Failed" message in the logs. It indicates the user credentials in [Kubernetes secret](charts/oci-service-broker/docs/installation.md#oci-credentials) is invalid. Please verify the credentials and restart the OCI Service Broker pod.
+
+`Authentication Failed` message in the logs indicates that the user credentials in [Kubernetes secret](installation.md#oci-credentials) is invalid. Please verify the credentials and restart the OCI Service Broker pod.
 
 ### 2. Helm values used for creating the OCI Service Broker
 
@@ -142,7 +150,7 @@ tls:
   enabled: <FLAG_TO_ENABLE_TLS>
 ```
 
-**Note:** The above command gives only the overriden helm values. To get all the values add `-a` optiont. Example: `helm get values -a oci-service-broker`
+**Note:** The above command gives only the overriden helm values. To get all the values add `-a` option. Example: `helm get values -a oci-service-broker`
 
 ### 3. Command to get status of pods
 

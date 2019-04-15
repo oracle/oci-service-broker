@@ -34,7 +34,7 @@ Right now we expose a `standard` plan where the user can specify CPU count and s
 
 ## OCI User Permission requirement
 
-The OCI user for OCI Service Broker should have permission `manage` for resoruce type `autonomous-data-warehouse`
+The OCI user for OCI Service Broker should have permission `manage` for resource type `autonomous-data-warehouse`
 
 **Sample Policy:**
 
@@ -44,7 +44,7 @@ Allow group <SERVICE_BROKER_GROUP> to manage autonomous-data-warehouse in compar
 
 ## Service Provision Request Parameters
 
-To provision, an ADW service user needs to provide the following details
+To provision, an ADW service user needs to provide the following details:
 
 | Parameter        | Description                                                         | Type   | Mandatory |
 | ---------------- | ------------------------------------------------------------------- | ------ | --------- |
@@ -53,10 +53,10 @@ To provision, an ADW service user needs to provide the following details
 | `compartmentId`  | The OCI compartment where the ADW instance will be provisioned.     | string | yes       |
 | `cpuCount`       | Number of CPU cores to have.                                        | int    | yes       |
 | `storageSizeTBs` | Size of the DB Storage in Terrabytes.                               | int    | yes       |
-| `password`       | ADW Service will pre-provision a DB Admin user when it provisions an ADW instance. The user needs to provide a password to be set for this Admin user.<br>The OCI ADW service requires the password to satisfy the below rules.<br><ul><li>The length should be between 12-18</li>A password must include an upper case, lower case, and special character.</ul> | string | yes       |
+| `password`       | ADW Service will pre-provision a DB Admin user when it provisions an ADW instance. The user needs to provide a password to be set for this Admin user.<br>The OCI ADW service requires the password to satisfy the below rules.<br><ul><li>The length should be 12 to 18 characters.</li><li>A password must include an upper case, lower case, and special character.</li></ul> | string | yes       |
 | `licenseType`    | Use your existing database software licenses(BYOL) or Subscribe to new database software licenses and the Database Cloud Service.<br>Valid values are:<ul><li>BYOL</li><li>NEW</li></ul>.                         | string | yes       |
 | `freeFormTags`   | free form tags that are to be used for tagging the ADW instance.    | object | no        |
-| `definedTags`    | The defined tags that are to be used for tagging the ADW instance.  | object | No        |
+| `definedTags`    | The defined tags that are to be used for tagging the ADW instance.  | object | no        |
 
 ## Service Binding Request Parameters
 
@@ -68,7 +68,7 @@ The user needs to pass the following parameters to get the binding details:
 
 ## Service Binding Response Credentials
 
-Users can create binding to get the credentials to use the ADW. The following files/details will be made available to the user
+Users can create binding to get the credentials to use the ADW. The following files/details will be made available to the user:
 
 | Parameter          | Description                                                              | Type   |
 | ------------------ | ------------------------------------------------------------------------ | ------ |
@@ -110,7 +110,7 @@ If no brokers are listed then it means the OCI Service Broker is not installed. 
 
 #### Sample files
 
-The sample files for ADW are available under [`oci-service-broker/samples/adw`](charts/oci-service-broker/samples/adw) directory.
+The sample files for ADW are available under [`oci-service-broker/samples/adw`](../samples/adw) directory.
 
 ### Provisioning
 
@@ -130,7 +130,7 @@ Please refer [Use Secret to pass passwords](#use-secret-to-pass-passwords) secti
 The  `adw-instance-plain.yaml` files contain the compartment OCID in which the user wants to provision the ADW instance. The user needs to update it with their compartment OCID.
 
 ```bash
-kubectl create -f oci-service-broker/samples/adw/adw-instance-plain.yaml
+kubectl create -f charts/oci-service-broker/samples/adw/adw-instance-plain.yaml
 ```
 
 #### Get instance status
@@ -162,10 +162,10 @@ Once the ADW Instance is provisioned the applications will require credentials/c
 - Creating a ServiceBinding resource. This will create a Kubernetes secret with the credentials/configurations.
 - The user needs to mount the credentials/configurations into the containers so that application can use this configuration.
 
-A sample Kubernetes resource yaml to create binding.
+A sample Kubernetes resource yaml to create binding:
 
 ```bash
-cat oci-service-broker/samples/adw/adw-binding-plain.yaml
+cat charts/oci-service-broker/samples/adw/adw-binding-plain.yaml
 ```
 
 **Note:**
@@ -175,7 +175,7 @@ instanceRef should be same as the instance name for which binding is required.
 #### Creating an ADW ServiceBinding resource
 
 ```bash
-kubectl create -f oci-service-broker/samples/adw/adw-binding-plain.yaml
+kubectl create -f charts/oci-service-broker/samples/adw/adw-binding-plain.yaml
 ```
 
 #### Get Binding status
@@ -198,7 +198,7 @@ When the ServiceBinding request completes successfully the user should see a sec
 kubectl get secrets adw-demo-binding -o yaml
 ```
 
-Output
+Output:
 
 ```yaml
 apiVersion: v1
@@ -237,7 +237,7 @@ User need to create secret with DB Admin user password and wallet password. Edit
 Create the Secret.
 
 ```bash
-kubectl create -f oci-service-broker/samples/adw/adw-demo-secret.yaml
+kubectl create -f charts/oci-service-broker/samples/adw/adw-demo-secret.yaml
 ```
 
 #### Deploy sample application
@@ -332,7 +332,7 @@ Important things to note:
 Deploy the app.
 
 ```bash
-kubectl create -f oci-service-broker/samples/adw/adw-demo.yaml
+kubectl create -f charts/oci-service-broker/samples/adw/adw-demo.yaml
 ```
 
 View the logs
@@ -341,7 +341,7 @@ View the logs
 kubectl logs $(kubectl get pod | grep ^adw-demo | grep Running | cut -d" " -f 1)
 ```
 
-Output
+Output:
 
 ```plain
 -------- Oracle JDBC Connection Testing ------
@@ -378,13 +378,13 @@ DEFAULT_TABLESPACE:SYSTEM
 Deleting the Service binding created in the previous step will result in the secret(that has the credentials) getting deleted.  All Service Bindings for a ServiceInstance should be deleted before deleting the ServiceInstance.
 
 ```bash
-kubectl delete -f oci-service-broker/samples/adw/adw-binding-plain.yaml
+kubectl delete -f charts/oci-service-broker/samples/adw/adw-binding-plain.yaml
 ```
 
 #### Delete Service Instance
 
 ```bash
-kubectl delete -f oci-service-broker/samples/adw/adw-instance-plain.yaml
+kubectl delete -f charts/oci-service-broker/samples/adw/adw-instance-plain.yaml
 ```
 
 ```bash
@@ -420,17 +420,17 @@ Create Secret:
 Edit the values of 'password:' and 'walletPassword:' in `oci-service-broker/samples/adw/adw-secret.yaml` with appropriate base64 encoded strings
 
 ```bash
-kubectl create -f oci-service-broker/samples/adw/adw-secret.yaml
+kubectl create -f charts/oci-service-broker/samples/adw/adw-secret.yaml
 ```
 
 Yaml to provision ADW instance with password loaded from Kubernetes Secret (notice parametersFrom part)
 
 ```bash
-cat oci-service-broker/samples/adw/adw-instance.yaml
+cat charts/oci-service-broker/samples/adw/adw-instance.yaml
 ```
 
 Yaml to provision ADW instance with password loaded from Kubernetes Secret (notice parametersFrom part)
 
 ```bash
-cat oci-service-broker/samples/adw/adw-binding.yaml
+cat charts/oci-service-broker/samples/adw/adw-binding.yaml
 ```
