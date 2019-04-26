@@ -134,7 +134,7 @@ Sometimes it will be required to check the helm values, that are overriden durin
 $ helm ls
 NAME              	REVISION	UPDATED                 	STATUS  	CHART                   	NAMESPACE
 catalog           	1       	Wed Apr  3 14:58:55 2019	DEPLOYED	catalog-0.1.34          	default  
-oci-service-broker	1       	Tue Apr  9 12:01:01 2019	DEPLOYED	oci-service-broker-1.0.0	default
+oci-service-broker	1       	Tue Apr  9 12:01:01 2019	DEPLOYED	oci-service-broker-<VERSION>	default
 
 # Use the RELEASE NAME of the OCI Service Broker
 $ helm get values oci-service-broker

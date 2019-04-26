@@ -11,10 +11,10 @@ replicaCount: 1
 # Image of the broker
 image:
   # Repository of the image
-  #repository: <DOCKER_REPO>/oci-service-broker
+  repository: iad.ocir.io/oracle/oci-service-broker
 
   # Tag of the image
-  #tag:  1.0.0
+  tag:  1.0.1
 
   # The image pull policy
   pullPolicy: Always

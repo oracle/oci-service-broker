@@ -30,7 +30,7 @@ apply plugin: 'maven-publish'
 archivesBaseName = 'oci-service-broker'
 
 // Sometimes, the version has to be overridden from command line
-version = project.hasProperty('version_num') ? project.getProperty('version_num') : '1.0.0'
+version = project.hasProperty('version_num') ? project.getProperty('version_num') : '1.0.1'
 mainClassName = 'com.oracle.oci.osb.Broker'
 
 sourceCompatibility = 10
