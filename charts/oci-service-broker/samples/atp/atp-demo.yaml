@@ -14,7 +14,7 @@ spec:
         app: atp-demo
     spec:
       # The credential files in the secret are base64 encoded twice and hence they need to be decoded for the programs to use them.
-      # This decode-creds initContainer takes care of decoding the files and writing them to a shared volume from which jdbc-app contianer
+      # This decode-creds initContainer takes care of decoding the files and writing them to a shared volume from which db-app container
       # can read them and use it for connecting to ATP.
       initContainers:
       - name: decode-creds
@@ -22,7 +22,7 @@ spec:
         - bash
         - -c
         - "for i in `ls -1 /tmp/creds | grep -v user_name`; do cat /tmp/creds/$i  | base64 --decode > /creds/$i; done; ls -l /creds/*;"
-        image: oraclelinux:7.5
+        image: oraclelinux:7.4
         volumeMounts:
         - name: creds-raw
           mountPath: /tmp/creds
@@ -30,17 +30,9 @@ spec:
         - name: creds
           mountPath: /creds
       containers:
-      # Simple JDBC Program that uses the credential files to connect to ATP and run a simple Query.
-      - name: jdbc-creds
-        command:
-        - bash
-        - -c
-        - "java -cp '/db-demo/ojdbc8-jars/*:/db-demo/oci-service-broker-all.jar'
-                  -Doracle.net.tns_admin=/db-demo/creds
-                  -Dtns_name=${TNS_NAME}
-                  com.oracle.cnp.atp.DBConnectionExample;trap : TERM INT; sleep infinity & wait"
-        image: iad.ocir.io/odx-platform/cnp/atp-demo:v1
-        imagePullPolicy: Always
+      # User application that uses credential files to connect to ATP.
+      - name: db-app
+        image: <USER_APPLICATION_IMAGE>
         env:
         # Pass DB ADMIN user name that is part of the secret created by the binding request.
         - name: DB_ADMIN_USER
@@ -62,8 +54,6 @@ spec:
             secretKeyRef:
               name: atp-user-cred
               key: walletPassword
-        - name: TNS_NAME
-          value: "osbdemo_high"
         volumeMounts:
         - name: creds
           mountPath: /db-demo/creds
@@ -72,6 +62,6 @@ spec:
       - name: creds-raw
         secret:
           secretName: atp-demo-binding
-      # Shared Volume in which init-continer will save the decoded credential files and the jdbc-app container reads.    
+      # Shared Volume in which initContainer will save the decoded credential files and the db-app container reads.
       - name: creds
         emptyDir: {}

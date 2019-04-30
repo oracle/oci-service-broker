@@ -16,9 +16,9 @@
   - [Binding](#binding)
     - [Creating an ADW ServiceBinding resource](#creating-an-adw-servicebinding-resource)
     - [Get Binding status](#get-instance-status)
-  - [Sample program to Connect to ADW](#sample-program-to-connect-to-adw)
+  - [Connecting to a provisioned ADW instance](#connecting-to-a-provisioned-adw-instance)
     - [Create a Kubernetes Secret with passwords](#create-a-kubernetes-secret-with-passwords)
-    - [Deploy sample application](#deploy-sample-application)
+    - [Injecting credentials and configurations](#injecting-credentials-and-configurations)
   - [Deprovision](#deprovision)
     - [Delete Service Binding](#delete-service-binding)
     - [Delete Service Instance](#delete-service-instance)
@@ -127,7 +127,7 @@ Please refer [Use Secret to pass passwords](#use-secret-to-pass-passwords) secti
 #### Creating an ADW ServiceInstance
 
 **NOTE:**
-The  `adw-instance-plain.yaml` files contain the compartment OCID in which the user wants to provision the ADW instance. The user needs to update it with their compartment OCID.
+The [`adw-instance-plain.yaml`](../samples/adw/adw-instance-plain.yaml) files contain the compartment OCID in which the user wants to provision the ADW instance. The user needs to update it with their compartment OCID.
 
 ```bash
 kubectl create -f charts/oci-service-broker/samples/adw/adw-instance-plain.yaml
@@ -228,11 +228,11 @@ data:
 1. **Due to a known issue in service catalog/OSB, the binary data in the Secret are encoded in base64 twice. While mounting the data from Secrets, Kubernetes decodes it once. Hence user will be required to decode the data one more time to get the actual binary file. We are trying to come up with a workaround for this.**
 1. The client will require the DB ADMIN password and the wallet password(optional) also to connect/manage ADW. Users can pass these from the secret file created earlier(adw-secret.yaml). This is required as we don't want to store any credentials inside the broker.
 
-### Sample program to Connect to ADW
+### Connecting to a provisioned ADW instance
 
 #### Create a Kubernetes Secret with passwords
 
-User need to create secret with DB Admin user password and wallet password. Edit the `oci-service-broker/samples/adw/adw-demo-secret.yaml` with proper base64 encoded value of the passwords. (Example: echo 's123456789S@' | base64).
+User need to create secret with DB Admin user password and wallet password. Edit the [`oci-service-broker/samples/adw/adw-demo-secret.yaml`](../samples/adw/adw-demo-secret.yaml) with proper base64 encoded value of the passwords. (Example: echo 's123456789S@' | base64).
 
 Create the Secret.
 
@@ -240,9 +240,13 @@ Create the Secret.
 kubectl create -f charts/oci-service-broker/samples/adw/adw-demo-secret.yaml
 ```
 
-#### Deploy sample application
+#### Injecting credentials and configurations 
 
-The file `oci-service-broker/samples/adw/adw-demo.yaml` contains a Kubernetes Deployment which deploys a Simple java program. The program connects to the ADW instance and runs a simple query. Content of the Yaml file.
+The file [`oci-service-broker/samples/adw/adw-demo.yaml`](../samples/adw/adw-demo.yaml) contains a sample Kubernetes deployment yaml that shows how to:
+1. Read the credentials/configuration from the secret and decode it using initContainer.
+1. Inject admin password and wallet password from secret as environment variable into an application container.
+
+**Note:**  Please refer [here](https://www.oracle.com/technetwork/database/application-development/jdbc/documentation/atp-5073445.html) for details on connecting to ADW from a java application. `Download the Client Credentials` step mentioned in the document is not required as it is already available in the secret created by the binding request.
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -257,7 +261,7 @@ spec:
         app: adw-demo
     spec:
       # The credential files in the secret are base64 encoded twice and hence they need to be decoded for the programs to use them.
-      # This decode-creds initContainer takes care of decoding the files and writing them to a shared volume from which jdbc-app contianer
+      # This decode-creds initContainer takes care of decoding the files and writing them to a shared volume from which db-app container
       # can read them and use it for connecting to ADW.
       initContainers:
       - name: decode-creds
@@ -265,7 +269,7 @@ spec:
         - bash
         - -c
         - "for i in `ls -1 /tmp/creds | grep -v user_name`; do cat /tmp/creds/$i  | base64 --decode > /creds/$i; done; ls -l /creds/*;"
-        image: oraclelinux:7.5
+        image: oraclelinux:7.4
         volumeMounts:
         - name: creds-raw
           mountPath: /tmp/creds
@@ -273,17 +277,9 @@ spec:
         - name: creds
           mountPath: /creds
       containers:
-      # Simple JDBC Program that uses the credential files to connect to ADW and run a simple Query.
-      - name: jdbc-creds
-        command:
-        - bash
-        - -c
-        - "java -cp '/db-demo/ojdbc8-jars/*:/db-demo/oci-service-broker-all.jar'
-                  -Doracle.net.tns_admin=/db-demo/creds
-                  -Dtns_name=${TNS_NAME}
-                  com.oracle.cnp.atp.DBConnectionExample;trap : TERM INT; sleep infinity & wait"
-        image: iad.ocir.io/odx-platform/cnp/atp-demo:v1
-        imagePullPolicy: Always
+      # User application that uses credential files to connect to ADW.
+      - name: db-app
+        image: <USER_APPLICATION_IMAGE>
         env:
         # Pass DB ADMIN user name that is part of the secret created by the binding request.
         - name: DB_ADMIN_USER
@@ -305,8 +301,6 @@ spec:
             secretKeyRef:
               name: adw-user-cred
               key: walletPassword
-        - name: TNS_NAME
-          value: "osbdemo_high"
         volumeMounts:
         - name: creds
           mountPath: /db-demo/creds
@@ -315,67 +309,24 @@ spec:
       - name: creds-raw
         secret:
           secretName: adw-demo-binding
-      # Shared Volume in which init-continer will save the decoded credential files and the jdbc-app container reads.
+      # Shared Volume in which initContainer will save the decoded credential files and the db-app container reads.
       - name: creds
         emptyDir: {}
 ```
 
 Important things to note:
 
-1. The volume `creds-raw` contains all credentials  files from the Secret `adw-demo-binding`
+1. The volume `creds-raw` contains all credentials  files from the Secret `adw-demo-binding` create by the bidning request.
 1. The initContainer `decode-creds` mounts the credentials file from 'creds-raw' and base64 decode them. The decoded files are written to volume `creds`.
-1. The container `jdbc-creds` mounts the decoded credentials from volume `creds` to directory `/db-demo/creds`.
+1. The container `db-app` mounts the decoded credentials from volume `creds` to directory `/db-demo/creds`.
 1. The DB ADMIN user name, password, wallet password are passed as environment variables (DB_ADMIN_USER, DB_ADMIN_PWD and  WALLET_PWD).
 1. The DBADMIN password and the wallet password are read and passed from the secret (oci-service-broker/samples/adw/adw-demo-secret.yaml) we created earlier.
-1. The demo sample java program uses the JDBC 18.X driver which can use the Oracle wallet to connect to the DB. To configure the wallet we set System property `oracle.net.tns_admin`  to the credentials directory  `/db-demo/creds` that includes the wallet file.
-
-Deploy the app.
-
-```bash
-kubectl create -f charts/oci-service-broker/samples/adw/adw-demo.yaml
-```
-
-View the logs
-
-```bash
-kubectl logs $(kubectl get pod | grep ^adw-demo | grep Running | cut -d" " -f 1)
-```
-
-Output:
-
-```plain
--------- Oracle JDBC Connection Testing ------
-Connecting to osbdemo_high ......
-
-Executing Query: select * from DBA_USERS where rownum < 4
-
-
-
-USERNAME:SYS
-ACCOUNT_STATUS:OPEN
-EXTERNAL_NAME:null
-CREATED:2018-08-26
-DEFAULT_TABLESPACE:SYSTEM
-==========================================
-USERNAME:AUDSYS
-ACCOUNT_STATUS:EXPIRED & LOCKED
-EXTERNAL_NAME:null
-CREATED:2018-08-26
-DEFAULT_TABLESPACE:DATA
-==========================================
-USERNAME:SYSTEM
-ACCOUNT_STATUS:OPEN
-EXTERNAL_NAME:null
-CREATED:2018-08-26
-DEFAULT_TABLESPACE:SYSTEM
-==========================================
-```
 
 ### Deprovision
 
 #### Delete Service Binding
 
-Deleting the Service binding created in the previous step will result in the secret(that has the credentials) getting deleted.  All Service Bindings for a ServiceInstance should be deleted before deleting the ServiceInstance.
+Deleting the Service binding created in the previous step will result in the secret(that has the credentials) getting deleted. All Service Bindings for a ServiceInstance should be deleted before deleting the ServiceInstance.
 
 ```bash
 kubectl delete -f charts/oci-service-broker/samples/adw/adw-binding-plain.yaml
