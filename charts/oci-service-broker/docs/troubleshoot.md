@@ -138,9 +138,6 @@ oci-service-broker	1       	Tue Apr  9 12:01:01 2019	DEPLOYED	oci-service-broker
 
 # Use the RELEASE NAME of the OCI Service Broker
 $ helm get values oci-service-broker
-image:
-  repository: <IMAGE_REPOSITORY>
-  tag: <IMAGE_TAG>
 ociCredentials:
   secretName: <KUBERNETES_SECRET_NAME>
 storage:

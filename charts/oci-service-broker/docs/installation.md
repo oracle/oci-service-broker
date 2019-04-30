@@ -6,11 +6,9 @@
 * [Install Service Catalog](#install-service-catalog)
 * [Install svcat tool](#install-svcat-tool)
 * [Deploy OCI Service Broker](#deploy-oci-service-broker)
-  * [Build OCI Service Broker Image from the Source](#build-oci-service-broker-image-from-the-source)
-  * [Install oci-service-broker chart](#install-oci-service-broker-chart)
-    * [OCI credentials](#oci-credentials)
-    * [Quick Setup](#quick-setup)
-    * [Recommended Setup](#recommended-setup)
+  * [OCI credentials](#oci-credentials)
+  * [Quick Setup](#quick-setup)
+  * [Recommended Setup](#recommended-setup)
     * [etcd for persistence](#etcd-for-persistence)
     * [Enable TLS](#enable-tls)
     * [Recommended Setup Command](#recommended-setup-command)
@@ -21,6 +19,7 @@
 * [Register OCI Service Broker](#register-oci-service-broker)
 * [Monitoring OCI Service Broker](#monitoring-oci-service-broker)
   * [JMX](#jmx)
+* [Build OCI Service Broker Image from the Source](#build-oci-service-broker-image-from-the-source)
 
 ## Pre-requisites
 
@@ -67,31 +66,9 @@ brew update && brew install kubernetes-service-catalog-client
 
 ## Deploy OCI Service Broker
 
-### Build OCI Service Broker Image from the Source
-
-After cloning the `oci-service-broker` source code run following command to build the Docker Image for OCI Service Broker
-
-```bash
-cd oci-service-broker/oci-service-broker
-
-#The OCI Service Broker internally uses [oci-java-sdk](https://github.com/oracle/oci-java-sdk) to manage OCI services. But they are not published to any public maven repositories yet. In order to build the project, users are required to download oci-java-sdk archive file and add the dependent libraries to libs directory of oci-service-broker. Below command will download the required libraries and add to the libs directory.
-
-bash download_SDK_libs.sh
-
-#Gradle is the build tool used in OCI Service Broker. Please execute the below command to compile, build and generate a docker image.
-
-gradle -b build.gradle clean build docker
-```
-
-If gradle build failed with error('Task :spotbugsMain FAILED'), please provide '-x spotbugsMain' option in above command. This is known issue due to latest JDK version.
-
-After successful build, a new docker image will be created having name 'oci-service-broker'. Push this image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or your own docker repository and refer this image in the Chart during deployment.
-
-### Install oci-service-broker chart
-
 The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes. The chart is available at [charts/oci-service-broker](../) directory.
 
-#### OCI credentials
+### OCI credentials
 
 The OCI Service Broker needs OCI user credentials details to provision and manage services/resources in the user tenancy. The users required to create a Kubernetes secret as detailed below.
 
@@ -121,19 +98,18 @@ kubectl create secret generic ocicredentials \
 ```
 The value for `ociCredentials.secretName` should contain the name of the Kubernetes Secret created above, that contains the OCI user and the credentials details.
 
-#### Quick Setup
+### Quick Setup
 
 For quickly testing out OCI Service Broker, TLS can be disabled and an embedded etcd container can be used. This can be used for quickly setting up the Broker but not recommended in PRODUCTION environments. Please refer to [Recommended Setup](#recommended-setup) for PRODUCTION environments
 
  ```bash
  helm install charts/oci-service-broker/.  --name oci-service-broker \
-  --set image.repository=<image name> --set image.tag=<image tag> \
   --set ociCredentials.secretName=ocicredentials \
   --set storage.etcd.useEmbedded=true \
   --set tls.enabled=false
  ```
 
-#### Recommended Setup
+### Recommended Setup
 
 It is strongly recommended to configure OCI Service Broker with [TLS](#enable-tls) as well as use an [external etcd cluster](#etcd-for-persistence). All of the default values in the helm chart reflects this recommendation.
 
@@ -213,7 +189,6 @@ Replace the values of --set arguments with your appropriate values to install th
 
 ```bash
 helm install  charts/oci-service-broker/. --name oci-service-broker \
- --set image.repository=<image repo and image name> --set image.tag=<image tag> \
  --set ociCredentials.secretName=ocicredentials --set tls.secretName=certsecret \
  --set storage.etcd.servers=<comma separated list of etcd servers>
 ```
@@ -307,3 +282,35 @@ Output:
 
 OCI Service Broker exposes metrics via an MBean with ObjectName `OCIOpenServiceBroker:type=BrokerMetrics`. A Prometheus
 JMX exporter docker container can be used along with OCI Service Broker to push the metrics to Prometheus.
+
+
+### Build OCI Service Broker Image from the Source
+
+Instead of using the pre-built image, users can build the OCI Service Broker image from source and use that to deploy the chart.
+
+After cloning the `oci-service-broker` source code run following command to build the Docker Image for OCI Service Broker
+
+```bash
+cd oci-service-broker/oci-service-broker
+
+#The OCI Service Broker internally uses [oci-java-sdk](https://github.com/oracle/oci-java-sdk) to manage OCI services. But they are not published to any public maven repositories yet. In order to build the project, users are required to download oci-java-sdk archive file and add the dependent libraries to libs directory of oci-service-broker. Below command will download the required libraries and add to the libs directory.
+
+bash download_SDK_libs.sh
+
+#Gradle is the build tool used in OCI Service Broker. Please execute the below command to compile, build and generate a docker image.
+
+gradle -b build.gradle clean build docker
+```
+
+If gradle build failed with error('Task :spotbugsMain FAILED'), please provide '-x spotbugsMain' option in above command. This is known issue due to latest JDK version.
+
+After successful build, a new docker image will be by name 'oci-service-broker'. Push this image to [OCIR](https://docs.cloud.oracle.com/iaas/Content/Registry/Concepts/registryoverview.htm) or your own docker repository and refer this image in the Chart during deployment by overriding the helm values `image.repository` and `image.tag`.
+
+example: 
+
+ ```bash
+ helm install charts/oci-service-broker/.  --name oci-service-broker \
+  --set image.repository=<image name> --set image.tag=<image tag> \
+  ...
+  ...
+ ```
