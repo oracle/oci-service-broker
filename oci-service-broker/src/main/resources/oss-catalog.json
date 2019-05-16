@@ -1,0 +1,103 @@
+{
+  "services": [
+    {
+      "name": "oss-service",
+      "id": "f28894d0-cf40-4cff-a19a-a6893f88dd67",
+      "description": "Oracle Streaming Service",
+      "tags": [
+        "stream",
+        "topic"
+      ],
+      "bindable": true,
+      "instances_retrievable": true,
+      "bindings_retrievable": true,
+      "asyncProvision": true,
+      "asyncBinding": false,
+      "asyncUpdate": false,
+      "asyncDelete": true,
+      "metadata": {
+        "provider": {
+          "name": "Oracle Cloud Infrastructure"
+        },
+        "listing": {
+          "imageUrl": "",
+          "longDescription": "Provision and use an Oracle Streaming Service"
+        },
+        "displayName": "Oracle Streaming Service"
+      },
+      "plan_updateable": true,
+      "plans": [
+        {
+          "name": "standard",
+          "id": "831ab2a8-97e4-4f34-a26b-2bfd61617b61",
+          "description": "Oracle Streaming Service",
+          "free": false,
+          "schemas": {
+            "service_instance": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "description": "Name of the stream",
+                      "type": "string"
+                    },
+                    "compartmentId": {
+                      "description": "The OCID of the compartment to which the stream should belong to",
+                      "type": "string"
+                    },
+                    "partitions": {
+                      "description": "The number of partition in the stream",
+                      "type": "integer"
+                    },
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags": {
+                      "description": "Defined Tags",
+                      "type": "object"
+                    }
+                  }
+                }
+              },
+              "update": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                    "freeFormTags": {
+                      "description": "Free form tags",
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "definedTags": {
+                      "description": "Defined Tags",
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "service_binding": {
+              "create": {
+                "parameters": {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "type": "object",
+                  "properties": {
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

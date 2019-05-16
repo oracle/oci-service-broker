@@ -7,4 +7,4 @@ kind: ClusterServiceBroker
 metadata:
   name: oci-service-broker
 spec:
-  url: http://oci-service-broker:8080
+  url: http://oci-service-broker.<NAMESPACE_OF_OCI_SERVICE_BROKER>:8080

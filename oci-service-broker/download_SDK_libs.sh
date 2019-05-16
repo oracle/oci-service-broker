@@ -9,7 +9,7 @@
 #sdk jars and their dependency jars. The jars are written to libs directory.
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SDK_VERSION="1.3.1"
+SDK_VERSION="1.5.4"
 TEMP_DIR="/tmp/oci-java-sdk"
 rm -rf ${TEMP_DIR}
 mkdir -p ${TEMP_DIR} 
@@ -17,7 +17,7 @@ mkdir -p ${SCRIPT_DIR}/libs
 echo "Downloading oci-java-sdk version v${SDK_VERSION} and the dependent libraries..."
 curl -sSL https://github.com/oracle/oci-java-sdk/releases/download/v${SDK_VERSION}/oci-java-sdk.zip -o ${TEMP_DIR}/oci-java-sdk.zip
 unzip -qq ${TEMP_DIR}/oci-java-sdk.zip -d ${TEMP_DIR}
-cp ${TEMP_DIR}/lib/oci-java-sdk-full-1.3.1.jar ${SCRIPT_DIR}/libs/
+cp ${TEMP_DIR}/lib/oci-java-sdk-full-1.5.4.jar ${SCRIPT_DIR}/libs/
 cp ${TEMP_DIR}/third-party/lib/*.jar  ${SCRIPT_DIR}/libs/
 rm -rf ${TEMP_DIR}
 echo "oci-java-sdk and the dependent libraries are downloaded to ${SCRIPT_DIR}/libs directory"
