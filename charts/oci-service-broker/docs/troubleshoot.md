@@ -92,12 +92,18 @@ oci-service-broker-oci-service-broker-57b76b66f7-g269x   0/2     ContainerCreati
 ```
 
 **Solution:**
-Ensure the [OCI Credentials Kubernetes secret](installation.md#oci-credentials)  is created and passed correctly in the `helm` install command.
+Ensure the [OCI Credentials Kubernetes secret](installation.md#oci-credentials)  is created and passed correctly in the `helm` install command. Also, ensure that both the OCI credentials and OCI Service Broker are installed in the same namespace.
+
+Command to check the pod for OCI Credentials not found error:
+
+```bash
+kubectl -n <NAMESPACE_OF_OCI_SERVICE_BROKER> describe pod $(kubectl -n <NAMESPACE_OF_OCI_SERVICE_BROKER> get pods | grep 'oci-service-broker-' | cut -d" " -f1) | grep 'secret "ocicredentials" not found'
+```
 
 Command to check the secret:
 
 ```bash
-kubectl get secret ocicredentials -o yaml
+kubectl -n <NAMESPACE_OF_OCI_SERVICE_BROKER> get secret ocicredentials -o yaml
 ```
 
 In the helm install command the secret should have been passed as shown below:

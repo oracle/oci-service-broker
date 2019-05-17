@@ -68,6 +68,10 @@ brew update && brew install kubernetes-service-catalog-client
 
 The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes. The chart is available at [charts/oci-service-broker](../) directory.
 
+```plain
+https://github.com/oracle/oci-service-broker/releases/download/v<REPLACE_LATEST_VERSION>/oci-service-broker-<REPLACE_LATEST_VERSION>.tgz
+```
+
 ### OCI credentials
 
 The OCI Service Broker needs OCI user credentials details to provision and manage services/resources in the user tenancy. The users required to create a Kubernetes secret as detailed below.
@@ -189,7 +193,8 @@ Replace the values of --set arguments with your appropriate values to install th
 
 ```bash
 helm install  charts/oci-service-broker/. --name oci-service-broker \
- --set ociCredentials.secretName=ocicredentials --set tls.secretName=certsecret \
+ --set ociCredentials.secretName=ocicredentials \
+ --set tls.secretName=certsecret \
  --set storage.etcd.servers=<comma separated list of etcd servers>
 ```
 
@@ -222,9 +227,10 @@ Refer [Restrict access to Service Catalog resources using RBAC](security.md#rest
 
 Sample files for various services are available under [`oci-service-broker/samples`](../samples) directory.
 
-Create a `ClusterServiceBroker` resource.
+Create a `ClusterServiceBroker` resource with OCI Service Broker URL to register the broker. Use the below register yaml file after updating the namespace of the OCI Service Broker.
 
 ```bash
+# Ensure <NAMESPACE_OF_OCI_SERVICE_BROKER> is replaced with the a proper namespace in oci-service-broker.yaml
 kubectl create -f oci-service-broker/samples/oci-service-broker.yaml
 ```
 
@@ -256,6 +262,7 @@ Output:
   atp-service                        Autonomous Transaction Processing Service
   object-store-service               Object Storage Service
   adw-service                        Autonomous Data Warehouse Service
+  oss-service                        Oracle Streaming Service
 ```
 
 Get Service Plans
@@ -274,6 +281,7 @@ Output:
   archive    object-store-service   An Archive type Object Storage
   standard   object-store-service   A Standard type Object Storage
   standard   adw-service            OCI Autonomous Data Warehouse
+  standard   oss-service            Oracle Streaming Service plan
 ```
 
 ## Monitoring OCI Service Broker

@@ -6,3 +6,4 @@
 com.oracle.oci.osb.adapters.objectstorage.ObjectStorageServiceAdapter
 com.oracle.oci.osb.adapters.adb.atp.ATPServiceAdapter
 com.oracle.oci.osb.adapters.adb.adw.ADWServiceAdapter
+com.oracle.oci.osb.adapters.oss.OSSServiceAdapter

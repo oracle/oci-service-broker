@@ -14,6 +14,7 @@ The OCI Service Broker is an open source implementation of [Open service broker 
 1. [Object Storage](https://docs.cloud.oracle.com/iaas/Content/Object/Concepts/objectstorageoverview.htm)
 1. [Autonomous Transaction Processing](https://www.oracle.com/in/database/autonomous-transaction-processing.html)
 1. [Autonomous Data Warehouse](https://www.oracle.com/in/database/data-warehouse.html)
+1. [Oracle Streaming Service](https://docs.cloud.oracle.com/iaas/Content/Streaming/Concepts/streamingoverview.htm)
 
 ## Installation
 
@@ -25,7 +26,11 @@ See the [Documentation](charts/oci-service-broker/README.md#oci-service-broker) 
 
 ## Charts
 
-The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. Please refer to [Documentation](#documentation) for detailed instructions.
+The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. The chart can be downloaded from below URL.
+
+```
+https://github.com/oracle/oci-service-broker/releases/download/v<REPLACE_LATEST_VERSION>/oci-service-broker-<REPLACE_LATEST_VERSION>.tgz
+```
 
 ## Samples
 
