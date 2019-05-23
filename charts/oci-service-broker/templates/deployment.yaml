@@ -31,6 +31,8 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: oci-osb
+      securityContext:
+        fsGroup: 999
       containers:
         - name: {{ .Chart.Name }}
           command:
@@ -73,8 +75,6 @@ spec:
            - "{{ printf "%s=%s" $key $val -}}"
   {{- end }}
 {{- end }}
-          securityContext:
-            fsGroup: 999
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

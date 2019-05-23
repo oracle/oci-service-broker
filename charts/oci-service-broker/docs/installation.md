@@ -49,7 +49,7 @@ helm repo add svc-cat https://svc-catalog-charts.storage.googleapis.com
 Install the Kubernetes Service Catalog helm chart:
 
 ```bash
-helm install svc-cat/catalog --set controllerManager.verbosity="4" --timeout 300 --name catalog --version 0.1.34
+helm install svc-cat/catalog --timeout 300 --name catalog
 ```
 
 Please note that the above command will run the Service Catalog using an embedded `etcd` instance. It is not recommended to run the Service Catalog using an embedded etcd instance in production environments, instead a separate etcd cluster should be setup and used by the Service Catalog. The open source [etcd operator project](https://github.com/coreos/etcd-operator) or a commercial offering may be used to setup a production quality etcd cluster.
@@ -69,7 +69,7 @@ brew update && brew install kubernetes-service-catalog-client
 The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes. The chart is available at [charts/oci-service-broker](../) directory.
 
 ```plain
-https://github.com/oracle/oci-service-broker/releases/download/v<REPLACE_LATEST_VERSION>/oci-service-broker-<REPLACE_LATEST_VERSION>.tgz
+https://github.com/oracle/oci-service-broker/releases/download/v1.1.1/oci-service-broker-1.1.1.tgz
 ```
 
 ### OCI credentials
@@ -85,8 +85,8 @@ The secret should have the below Keys and respective values for it:
 | `tenancy` | The OCID of your tenancy |
 | `fingerprint`    | The Fingerprint of your OCI user |
 | `user`    | OCID of the user |
-| `passphrase`    | The passphrase of the private key(if passphrase is set, then set the value to an empty string) |
 | `privatekey`    | The OCI User private key |
+| `passphrase`    | The passphrase of the private key. This is mandatory and if the private key does not have a passphrase, then set the value to an empty string. |
 | `region`    | The region in which the OKE cluster is running. The value should be in OCI region format. Example: us-ashburn-1 |
 
 Run the below command to create Secret by name `ociCredentials`. (Replace values with your user credentials)
@@ -105,6 +105,15 @@ The value for `ociCredentials.secretName` should contain the name of the Kuberne
 ### Quick Setup
 
 For quickly testing out OCI Service Broker, TLS can be disabled and an embedded etcd container can be used. This can be used for quickly setting up the Broker but not recommended in PRODUCTION environments. Please refer to [Recommended Setup](#recommended-setup) for PRODUCTION environments
+
+```bash
+ helm install https://github.com/oracle/oci-service-broker/releases/download/v1.1.1/oci-service-broker-1.1.1.tgz  --name oci-service-broker \
+  --set ociCredentials.secretName=ocicredentials \
+  --set storage.etcd.useEmbedded=true \
+  --set tls.enabled=false
+ ```
+
+Using Helm install from the charts directory in master branch. Please use below command.
 
  ```bash
  helm install charts/oci-service-broker/.  --name oci-service-broker \
@@ -190,6 +199,14 @@ Please note that the names in keys i.e. keyStore.password and keyStore must not 
 #### Recommended Setup Command
 
 Replace the values of --set arguments with your appropriate values to install the OCI Service Broker. User needs to point docker images either from OCIR or from their repository.
+```bash
+ helm install https://github.com/oracle/oci-service-broker/releases/download/v1.1.1/oci-service-broker-1.1.1.tgz  --name oci-service-broker \
+  --set ociCredentials.secretName=ocicredentials \
+  --set tls.secretName=certsecret \
+  --set storage.etcd.servers=<comma separated list of etcd servers>
+ ```
+
+Using Helm install from the charts directory in master branch. Please use below command.
 
 ```bash
 helm install  charts/oci-service-broker/. --name oci-service-broker \
@@ -225,7 +242,11 @@ Refer [Restrict access to Service Catalog resources using RBAC](security.md#rest
 
 ## Register OCI Service Broker
 
-Sample files for various services are available under [`oci-service-broker/samples`](../samples) directory.
+Sample files for various services are available under [`oci-service-broker/samples`](../samples) directory inside the charts. The below command extracts chart that contains the sample files.
+
+```bash
+curl https://github.com/oracle/oci-service-broker/releases/download/v1.1.1/oci-service-broker-1.1.1.tgz | tar xz
+```
 
 Create a `ClusterServiceBroker` resource with OCI Service Broker URL to register the broker. Use the below register yaml file after updating the namespace of the OCI Service Broker.
 
