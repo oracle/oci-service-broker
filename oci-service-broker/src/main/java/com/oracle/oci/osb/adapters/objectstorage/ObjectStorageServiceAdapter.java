@@ -74,27 +74,29 @@ public class ObjectStorageServiceAdapter implements ServiceAdapter {
     public ServiceInstanceStatus getOciServiceInstanceStatus(String instanceId, ServiceInstanceProvisionRequest body)
             throws BmcException {
         try {
-            Object parameters = body.getParameters();
-            if (parameters == null || !(parameters instanceof Map)) {
-                throw Errors.missingParameters();
-            }
-            Map mapParameters = (Map) parameters;
-
-            String bucketName = RequestUtil
-                    .getStringParameter(mapParameters, NAME, true);
-            String namespace = RequestUtil
-                    .getStringParameter(mapParameters, NAMESPACE, true);
+            Map mapParameters = RequestUtil.validateParamsExists(body.getParameters());
+            String bucketName = RequestUtil.getNonEmptyStringParameter(mapParameters, NAME);
+            String namespace = RequestUtil.getNonEmptyStringParameter(mapParameters, NAMESPACE);
+            boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(mapParameters, Constants.PROVISIONING, false);
 
             Bucket bucket = objectStorageClient
                     .getBucket(GetBucketRequest.builder().bucketName(bucketName)
                             .namespaceName(namespace).build()).getBucket();
 
-            Map<String, String> tags = bucket.getFreeformTags();
-            if (tags == null ||
-                    !instanceId.equals(tags.get(Constants.OSB_INSTANCE_ID_LABEL)) || !(sameInstance(mapParameters, bucket))) {
-                return ServiceInstanceStatus.CONFLICT;
+            if(!isProvisioningRequired) { // it's for just binding request where instance already provisioned so just verifying bucket
+                if (bucket != null) {
+                    return ServiceInstanceStatus.EXISTS;
+                } else {
+                    return ServiceInstanceStatus.DOESNOTEXIST;
+                }
             } else {
-                return ServiceInstanceStatus.EXISTS;
+                Map<String, String> tags = bucket.getFreeformTags();
+                if (tags == null ||
+                        !instanceId.equals(tags.get(Constants.OSB_INSTANCE_ID_LABEL)) || !(sameInstance(mapParameters, bucket))) {
+                    return ServiceInstanceStatus.CONFLICT;
+                } else {
+                    return ServiceInstanceStatus.EXISTS;
+                }
             }
         } catch (BmcException e) {
             if (e.getStatusCode() == Response.Status.NOT_FOUND.getStatusCode()) {
@@ -110,14 +112,13 @@ public class ObjectStorageServiceAdapter implements ServiceAdapter {
         ServiceInstanceProvision response = new ServiceInstanceProvision();
         Map mapParameters = (Map) body.getParameters();
 
-        String bucketName = RequestUtil
-                .getStringParameter(mapParameters, NAME, true);
-        String compartmentId = RequestUtil
-                .getStringParameter(mapParameters, COMPARTMENT_ID, true);
-        String namespace = RequestUtil
-                .getStringParameter(mapParameters, NAMESPACE, true);
+        String bucketName = RequestUtil.getNonEmptyStringParameter(mapParameters, NAME);
+        String compartmentId = RequestUtil.getNonEmptyStringParameter(mapParameters, COMPARTMENT_ID);
+        String namespace = RequestUtil.getNonEmptyStringParameter(mapParameters, NAMESPACE);
+        boolean isProvisioningRequired = RequestUtil
+                .getBooleanParameterDefaultValueTrue(mapParameters, Constants.PROVISIONING, false);
 
-        response.setSvcData(getSvcData(instanceId, body, bucketName, compartmentId, namespace));
+        response.setSvcData(getSvcData(instanceId, body, bucketName, compartmentId, namespace, isProvisioningRequired));
         response.setStatusCode(Response.Status.OK.getStatusCode());
 
         return response;
@@ -164,7 +165,7 @@ public class ObjectStorageServiceAdapter implements ServiceAdapter {
                 .namespaceName(namespace)
                 .createBucketDetails(createBucketDetailsBuilder.build()).build());
 
-        response.setSvcData(getSvcData(instanceId, body, bucketName, compartmentId, namespace));
+        response.setSvcData(getSvcData(instanceId, body, bucketName, compartmentId, namespace, true));
 
         response.setStatusCode(Response.Status.CREATED.getStatusCode());
         return response;
@@ -173,12 +174,7 @@ public class ObjectStorageServiceAdapter implements ServiceAdapter {
     @Override
     public ServiceInstanceAsyncOperation updateServiceInstance(String instanceId,
                                                                ServiceInstanceUpdateRequest body, ServiceData svcData) {
-        Object parameters = body.getParameters();
-        if (parameters == null || !(parameters instanceof Map)) {
-            throw Errors.missingParameters();
-        }
-
-        Map mapParameters = (Map) parameters;
+        Map mapParameters = RequestUtil.validateParamsExists(body.getParameters());
 
         Map<String, String> freeFormTags = RequestUtil
                 .getMapStringParameter(mapParameters, Constants.FREE_FORM_TAGS,
@@ -387,7 +383,7 @@ public class ObjectStorageServiceAdapter implements ServiceAdapter {
                              ServiceInstanceProvisionRequest body,
                              String bucketName,
                              String compartmentId,
-                             String namespace) {
+                             String namespace, boolean provisioningRequired) {
         ServiceData svcData = new ServiceData();
         svcData.setInstanceId(instanceId);
         svcData.setPlanId(body.getPlanId());
@@ -395,6 +391,7 @@ public class ObjectStorageServiceAdapter implements ServiceAdapter {
         svcData.putMetadata(BUCKET_NAME, bucketName);
         svcData.putMetadata(NAMESPACE, namespace);
         svcData.setCompartmentId(compartmentId);
+        svcData.setProvisioning(provisioningRequired);
         return svcData;
     }
 

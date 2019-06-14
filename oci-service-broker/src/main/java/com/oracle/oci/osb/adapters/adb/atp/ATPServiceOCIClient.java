@@ -197,16 +197,6 @@ public class ATPServiceOCIClient implements AutonomousDatabaseOCIClient {
     }
 
     /**
-     * Fetch the list of all ATP instances in a given OCI Compartment.
-     *
-     * @param compartmentId OCID of the Compartment.
-     * @return List of ATP instance details in the compartment.
-     */
-    public List<AutonomousDatabaseInstance> listInstances(String compartmentId) {
-        return listInstances(compartmentId, "");
-    }
-
-    /**
      * Fetch the list of all ATP with a specific display name in a given OCI
      * compartment.
      *
@@ -227,7 +217,6 @@ public class ATPServiceOCIClient implements AutonomousDatabaseOCIClient {
 
         return autonomousDatabaseInstanceList;
     }
-
 
     @Override
     public void close() {

@@ -72,4 +72,6 @@ public class Constants {
     public static final List<String> TLS_PROTOOLS = Collections.unmodifiableList(Arrays.asList("TLSv1.2","TLSv1.2"));
     public static final String ENABLED_CIPHERS_RESOURCE = "enabledCiphers";
     public static final String POD_NAME = "POD_NAME";
+    public static final String PROVISIONING = "provisioning";
+    public static final String OCID = "ocid";
 }

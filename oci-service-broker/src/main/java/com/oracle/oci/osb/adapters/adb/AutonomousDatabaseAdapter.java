@@ -92,14 +92,23 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         return mapper.readValue(stream, Catalog.class);
     }
 
-
     @Override
     public ServiceInstanceStatus getOciServiceInstanceStatus(String instanceId, ServiceInstanceProvisionRequest body) {
 
         checkParamsExists(body.getParameters());
-
         @SuppressWarnings("unchecked")
         Map<String, Object> reqParams = (Map<String, Object>) body.getParameters();
+        boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(reqParams, Constants.PROVISIONING, false);
+
+        if(isProvisioningRequired) {
+            return getOciServiceInstanceStatusForProvisioning(instanceId, reqParams);
+        }
+        else {
+            return getOciServiceInstanceStatusForBinding(reqParams);
+        }
+    }
+
+    private ServiceInstanceStatus getOciServiceInstanceStatusForProvisioning(String instanceId, Map<String, Object> reqParams) {
 
         String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
         String name = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_NAME);
@@ -110,11 +119,29 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             if (autonomousDatabaseInstance == null) {
                 return ServiceInstanceStatus.DOESNOTEXIST;
             } else {
-                if(isSameInstance(autonomousDatabaseInstance, reqParams)){
+                if (isSameInstance(autonomousDatabaseInstance, reqParams)) {
                     return ServiceInstanceStatus.EXISTS;
                 } else {
                     return ServiceInstanceStatus.CONFLICT;
                 }
+            }
+        }
+    }
+
+    private ServiceInstanceStatus getOciServiceInstanceStatusForBinding(Map<String, Object> reqParams) {
+
+        String ocId = RequestUtil.getNonEmptyStringParameter(reqParams, Constants.OCID);
+        if(!RequestUtil.isValidOCID(ocId)) {
+            throw Errors.invalidParameter(Constants.OCID);
+        }
+        String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
+
+        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+            AutonomousDatabaseInstance autonomousDatabaseInstance = adbServiceClient.get(ocId);
+            if (autonomousDatabaseInstance == null) {
+                return ServiceInstanceStatus.DOESNOTEXIST;
+            } else {
+                return ServiceInstanceStatus.EXISTS;
             }
         }
     }
@@ -130,8 +157,9 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         checkParamsExists(body.getParameters());
 
         Map<String, Object> reqParams = (Map<String, Object>) body.getParameters();
-
+        boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(reqParams, Constants.PROVISIONING, false);
         String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
+
         try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
 
             //Provision
@@ -141,18 +169,26 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             adbSvcData.setServiceId(serviceId);
             adbSvcData.setPlanId(planId);
             adbSvcData.setCompartmentId(compartmentId);
+            adbSvcData.setProvisioning(isProvisioningRequired);
 
             //Check oci and provision if instance doesn't exists already
-            AutonomousDatabaseInstance autonomousDatabaseInstance = instanceExists(adbServiceClient
-                    .listInstances(compartmentId, name), instanceId);
+            if(isProvisioningRequired) {
+                AutonomousDatabaseInstance autonomousDatabaseInstance = instanceExists(adbServiceClient
+                        .listInstances(compartmentId, name), instanceId);
 
-            //instance already exists!
-            adbSvcData.setOcid(autonomousDatabaseInstance.getId());
-            response.setSvcData(adbSvcData);
-            if(autonomousDatabaseInstance.getLifecycleState() == AutonomousDatabaseInstance.LifecycleState.Available) {
-                response.setStatusCode(Response.Status.OK.getStatusCode());
+                //instance already exists!
+                adbSvcData.setOcid(autonomousDatabaseInstance.getId());
+                response.setSvcData(adbSvcData);
+                if(autonomousDatabaseInstance.getLifecycleState() == AutonomousDatabaseInstance.LifecycleState.Available) {
+                    response.setStatusCode(Response.Status.OK.getStatusCode());
+                } else {
+                    response.setStatusCode(Response.Status.ACCEPTED.getStatusCode());
+                }
             } else {
-                response.setStatusCode(Response.Status.ACCEPTED.getStatusCode());
+                String ocId = RequestUtil.getNonEmptyStringParameter(reqParams, Constants.OCID);
+                adbSvcData.setOcid(ocId);
+                response.setSvcData(adbSvcData);
+                response.setStatusCode(Response.Status.OK.getStatusCode());
             }
             return response;
         }
@@ -203,6 +239,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             adbSvcData.setServiceId(serviceId);
             adbSvcData.setPlanId(planId);
             adbSvcData.setCompartmentId(compartmentId);
+            adbSvcData.setProvisioning(true);
 
             AutonomousDatabaseInstance autonomousDatabaseInstance = adbServiceClient.create(name, dbName, cpuCount,
                     storageSize, freeFormTags, definedTags, password, isLicenseIncluded);
@@ -218,7 +255,6 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
 
         return response;
     }
-
 
     /**
      * {@inheritDoc}
@@ -474,8 +510,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         return response;
     }
 
-    private AutonomousDatabaseInstance instanceExists(List<AutonomousDatabaseInstance> instanceList, String
-            instanceId) {
+    private AutonomousDatabaseInstance instanceExists(List<AutonomousDatabaseInstance> instanceList, String instanceId) {
         if (instanceList != null) {
             for (AutonomousDatabaseInstance instance : instanceList) {
                 Map<String, String> tags = instance.getFreeformTags();

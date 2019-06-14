@@ -22,11 +22,7 @@ public interface AutonomousDatabaseOCIClient extends AutoCloseable {
 
     void close();
 
-    AutonomousDatabaseInstance changePassword(String password);
-
     Map<String, String> getCredentials(String atpId, String dbName, String wPassword) throws IOException;
-
-    List<AutonomousDatabaseInstance> listInstances(String compartmentId);
 
     List<AutonomousDatabaseInstance> listInstances(String compartmentId, String displayName);
 }

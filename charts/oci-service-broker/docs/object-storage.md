@@ -4,12 +4,16 @@
 - [Plans](#plans)
 - [OCI User Permission requirement](#oci-user-permission-requirement)
 - [Service Provision Request Parameters](#service-provision-request-parameters)
+    - [Provisioning a new Service Instance](#provisioning-a-new-service-instance)
+    - [Attaching an Existing Service Instance](#attaching-an-existing-service-instance)
+- [Service Provision Request Parameters for Existing Instance](#service-provision-request-parameters-for-existing-service-instance)
 - [Service Binding](#service-binding)
   - [Request Parameters](#request-parameters)
   - [Response Credentials](#response-credentials)
 - [Example](#example)
   - [Kubernetes](#kubernetes)
-    - [Provisioning](#provisioning)
+    - [Creating a New Instance](#creating-a-new-instance)
+    - [Attaching an Existing Instance](#attaching-an-existing-instance)
     - [Binding](#binding)
 
 ## Introduction
@@ -35,7 +39,9 @@ The OCI user for OCI Service Broker should have permission `manage` for resource
 Allow group <SERVICE_BROKER_GROUP> to manage buckets in compartment <COMPARTMENT_NAME>
 ```
 
-## Service Provision Request Parameters
+### Service Provision Request Parameters
+
+## Provisioning a new Service Instance
 
 The request parameters for Service provisioning are:
 
@@ -48,6 +54,20 @@ The request parameters for Service provisioning are:
 | definedTags      | The defined tags of the bucket                               | object | No        |
 | metadata         | The metadata of the bucket                                   | object | No        |
 | publicAccessType | The public access type of the bucket. Valid values are NoPublicAccess, ObjectRead and ObjectReadWithoutList. Default is NoPublicAccess | string | No        |
+
+## Attaching an Existing Service Instance
+
+For more information about binding to an existing Object Storage service instance, see [Attaching an Existing Service Instance](services.md#attaching-an-existing-service-instance).
+
+The request parameters for the existing Service provisioning are:
+
+| Parameter        | Description                                                  | Type    | Mandatory |
+| ---------------- | ------------------------------------------------------------ | ------  | --------- |
+| name             | The name of the bucket                                       | string  | Yes       |
+| namespace        | The namespace of the bucket                                  | string  | Yes       |
+| provisioning     | Provision flag value should be false in this case            | boolean | Yes       |
+
+OCI Service broker will not provision the new instance or manage the lifecycle of instance.  
 
 ## Service Binding
 
@@ -70,7 +90,7 @@ Service Binding is optional in case of this service. OCI User credentials can be
 
 ### Kubernetes
 
-#### Provisioning
+#### Creating a New Instance
 
 Create a bucket
 
@@ -124,6 +144,25 @@ spec:
    compartmentId: "CompartmentOCID"
    namespace: "OCINamespace"
    publicAccessType: "ObjectRead"
+```
+
+#### Attaching an Existing Instance
+
+Provision Existing bucket
+
+```yaml
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+ name: "BucketName"
+ namespace: "Namespace"
+spec:
+ clusterServiceClassExternalName: "object-store-service"
+ clusterServicePlanExternalName: "standard"
+ parameters:
+   name: "BucketName"
+   namespace: "OCINamespace"
+   provisioning: false
 ```
 
 #### Binding
