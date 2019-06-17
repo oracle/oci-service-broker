@@ -64,33 +64,24 @@ public class OSSServiceAdapter implements ServiceAdapter {
         return catalog;
     }
 
-    private ServiceInstanceStatus getOciServiceInstanceStatusForBinding(Map mapParameters ) {
-        String ocID = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.OCID);
-        Stream stream = null;
-        try {
-            stream = streamAdminClient
-                    .getStream(GetStreamRequest.builder().streamId(ocID).build())
-                    .getStream();
-        } catch (Exception e) {
-            return ServiceInstanceStatus.DOESNOTEXIST;
+    @Override
+    public ServiceInstanceStatus getOciServiceInstanceStatus(String instanceId, com.oracle.oci.osb.model.ServiceInstanceProvisionRequest body) {
+        Object parameters = body.getParameters();
+        if (parameters == null || !(parameters instanceof Map)) {
+            throw Errors.missingParameters();
         }
 
+        Map mapParameters = (Map) parameters;
 
-        if (stream!=null && (stream.getLifecycleState() == Stream.LifecycleState.Active ||
-                stream.getLifecycleState() == Stream.LifecycleState.Creating)) {
-            return ServiceInstanceStatus.EXISTS;
-        } else {
-            return ServiceInstanceStatus.DOESNOTEXIST;
-        }
-    }
-
-    private ServiceInstanceStatus getOciServiceInstanceStatusForProvisioning(String instanceId, Map mapParameters ) {
-        String streamName = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.NAME);
-        String compartmentId = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.COMPARTMENT_ID);
+        String streamName = RequestUtil
+                .getStringParameter(mapParameters, Constants.NAME, true);
+        String compartmentId = RequestUtil
+                .getStringParameter(mapParameters, Constants.COMPARTMENT_ID, true);
         ListStreamsResponse listResponse = streamAdminClient.listStreams(ListStreamsRequest.builder()
                 .compartmentId(compartmentId).build());
         Optional<StreamSummary> summary = listResponse.getItems().stream()
                 .filter(item -> item.getName().equals(streamName)).findFirst();
+
         if (summary.isPresent()) {
             StreamSummary stream = summary.get();
             Map<String, String> freeFormTagsExisting = stream.getFreeformTags();
@@ -106,62 +97,27 @@ public class OSSServiceAdapter implements ServiceAdapter {
     }
 
     @Override
-    public ServiceInstanceStatus getOciServiceInstanceStatus(String instanceId, com.oracle.oci.osb.model.ServiceInstanceProvisionRequest body) {
-        Map mapParameters = validateParamsExists(body.getParameters());
-        boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(mapParameters, Constants.PROVISIONING, false);
-        if(!isProvisioningRequired) {
-            return getOciServiceInstanceStatusForBinding(mapParameters);
-        } else {
-            return getOciServiceInstanceStatusForProvisioning(instanceId,mapParameters);
-        }
-    }
-
-    @Override
     public ServiceInstanceProvision provisionExistingServiceInstance(String instanceId,
                                                                      ServiceInstanceProvisionRequest body) {
-        Map mapParameters = validateParamsExists(body.getParameters());
+        Map mapParameters = (Map) body.getParameters();
         ServiceInstanceProvision response = new ServiceInstanceProvision();
+        String streamName = RequestUtil
+                .getStringParameter(mapParameters, Constants.NAME, true);
+        String compartmentId = RequestUtil
+                .getStringParameter(mapParameters, Constants.COMPARTMENT_ID, true);
 
-        boolean isProvisioningRequired = RequestUtil
-                .getBooleanParameterDefaultValueTrue(mapParameters, Constants.PROVISIONING, false);
+        ListStreamsResponse listResponse = streamAdminClient.listStreams(ListStreamsRequest.builder()
+                .compartmentId(compartmentId).build());
+        Optional<StreamSummary> summary = listResponse.getItems().stream()
+                .filter(item -> item.getName().equals(streamName)).findFirst();
 
-        if(isProvisioningRequired) {
-            String streamName = RequestUtil
-                    .getNonEmptyStringParameter(mapParameters, Constants.NAME);
-            String compartmentId = RequestUtil
-                    .getNonEmptyStringParameter(mapParameters, Constants.COMPARTMENT_ID);
-
-            ListStreamsResponse listResponse = streamAdminClient.listStreams(ListStreamsRequest.builder()
-                    .compartmentId(compartmentId).build());
-            Optional<StreamSummary> summary = listResponse.getItems().stream()
-                    .filter(item -> item.getName().equals(streamName)).findFirst();
-
-            StreamSummary stream = summary.get();
-            int statusCode = stream.getLifecycleState() == StreamSummary.LifecycleState.Active
-                    ? Response.Status.OK.getStatusCode()
-                    : Response.Status.ACCEPTED.getStatusCode();
-            response.setStatusCode(statusCode);
-            response.setSvcData(getSvcData(instanceId, body, compartmentId, summary.get().getId(), isProvisioningRequired));
-            return response;
-        } else {
-            String ocID = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.OCID);
-            Stream stream = streamAdminClient
-                    .getStream(GetStreamRequest.builder().streamId(ocID).build())
-                    .getStream();
-            int statusCode = stream.getLifecycleState() == Stream.LifecycleState.Active
-                    ? Response.Status.OK.getStatusCode()
-                    : Response.Status.ACCEPTED.getStatusCode();
-            response.setStatusCode(statusCode);
-            response.setSvcData(getSvcData(instanceId, body, stream.getCompartmentId(), ocID, isProvisioningRequired));
-            return response;
-        }
-    }
-
-    private Map validateParamsExists(Object params){
-        if (params == null || !(params instanceof Map)) {
-            throw Errors.missingParameters();
-        }
-        return (Map) params;
+        StreamSummary stream = summary.get();
+        int statusCode = stream.getLifecycleState() == StreamSummary.LifecycleState.Active
+                ? Response.Status.OK.getStatusCode()
+                : Response.Status.ACCEPTED.getStatusCode();
+        response.setStatusCode(statusCode);
+        response.setSvcData(getSvcData(instanceId, body, compartmentId, stream.getId()));
+        return response;
     }
 
     @Override
@@ -169,12 +125,21 @@ public class OSSServiceAdapter implements ServiceAdapter {
                                                              Map<String, String> freeFormTags) {
         ServiceInstanceProvision response = new ServiceInstanceProvision();
 
-        Map mapParameters = validateParamsExists(body.getParameters());
+        Object parameters = body.getParameters();
+        if (parameters == null || !(parameters instanceof Map)) {
+            throw Errors.missingParameters();
+        }
 
-        String streamName = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.NAME);
-        String compartmentId = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.COMPARTMENT_ID);
-        Integer partitions = RequestUtil.getIntegerParameter(mapParameters, PARTITIONS, true);
-        Map<String, Map<String, Object>> definedTags = RequestUtil.getMapMapObjectParameter(mapParameters,
+        Map mapParameters = (Map) parameters;
+
+        String streamName = RequestUtil
+                .getStringParameter(mapParameters, Constants.NAME, true);
+        String compartmentId = RequestUtil
+                .getStringParameter(mapParameters, Constants.COMPARTMENT_ID, true);
+        Integer partitions = RequestUtil
+                .getIntegerParameter(mapParameters, PARTITIONS, true);
+        Map<String, Map<String, Object>> definedTags = RequestUtil
+                .getMapMapObjectParameter(mapParameters,
                         Constants.DEFINED_TAGS, false);
 
         CreateStreamDetails.Builder createStreamBuilder = CreateStreamDetails.builder().name(streamName)
@@ -184,7 +149,7 @@ public class OSSServiceAdapter implements ServiceAdapter {
         CreateStreamResponse createResponse = streamAdminClient.createStream(CreateStreamRequest.builder()
                 .createStreamDetails(createStreamBuilder.build()).build());
 
-        response.setSvcData(getSvcData(instanceId, body, compartmentId, createResponse.getStream().getId(), true));
+        response.setSvcData(getSvcData(instanceId, body, compartmentId, createResponse.getStream().getId()));
 
         response.setStatusCode(Response.Status.ACCEPTED.getStatusCode());
         return response;
@@ -193,8 +158,13 @@ public class OSSServiceAdapter implements ServiceAdapter {
     @Override
     public ServiceInstanceAsyncOperation updateServiceInstance(String instanceId,
                                                                ServiceInstanceUpdateRequest body, ServiceData svcData) {
+        Object parameters = body.getParameters();
 
-        Map mapParameters = validateParamsExists(body.getParameters());
+        if (parameters == null || !(parameters instanceof Map)) {
+            throw Errors.missingParameters();
+        }
+
+        Map mapParameters = (Map) parameters;
 
         Map<String, String> freeFormTags = RequestUtil
                 .getMapStringParameter(mapParameters, Constants.FREE_FORM_TAGS,
@@ -264,12 +234,8 @@ public class OSSServiceAdapter implements ServiceAdapter {
 
     @Override
     public ServiceInstanceResource getServiceInstance(ServiceData svcData) {
-        Map<String, String> resParams = new HashMap<>();
-        resParams.put(Constants.OCID, svcData.getOcid());
-
         ServiceInstanceResource response = new ServiceInstanceResource();
         response.setServiceId(svcData.getServiceId());
-        response.setParameters(resParams);
         response.setStatusCode(Response.Status.OK.getStatusCode());
         return response;
     }
@@ -349,14 +315,13 @@ public class OSSServiceAdapter implements ServiceAdapter {
     private ServiceData getSvcData(String instanceId,
                                    ServiceInstanceProvisionRequest body,
                                    String compartmentId,
-                                   String ocid, boolean provisioningRequired) {
+                                   String ocid) {
         ServiceData svcData = new ServiceData();
         svcData.setInstanceId(instanceId);
         svcData.setPlanId(body.getPlanId());
         svcData.setServiceId(body.getServiceId());
         svcData.setCompartmentId(compartmentId);
         svcData.setOcid(ocid);
-        svcData.setProvisioning(provisioningRequired);
         return svcData;
     }
 

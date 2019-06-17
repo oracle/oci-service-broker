@@ -442,37 +442,25 @@ public class OSBV2API {
             Response opsResponse = executeAndReturnResponse(() -> {
                 ServiceAdapter serviceAdapter = validateAndGetAdapter(serviceId);
 
+
                 if (svcData == null) {
                     throw new BrokerHttpException(Response.Status.GONE.getStatusCode(),
                             "The service instance does not exist", "InstanceDoesNotExist");
                 }
 
-                AsyncOperation response = null;
                 Boolean asyncDelete = svc.isAsyncDelete();
                 if (asyncDelete != null && asyncDelete && (acceptsIncomplete == null || !acceptsIncomplete)) {
                     throw Errors.asyncRequired();
                 }
 
                 validateServiceAndPlanId(planId, svcData.getPlanId(), serviceId, svcData.getServiceId(), true);
-
-                Boolean isProvisioning = svcData.getProvisioning();
-                if(!isProvisioning) {
+                AsyncOperation response = serviceAdapter.deleteServiceInstance(instanceId, serviceId, planId, svcData);
+                if (response.getStatusCode() == Response.Status.OK.getStatusCode() ||
+                        response.getStatusCode() == Response.Status.GONE.getStatusCode()) {
                     dataStore.removeServiceData(instanceId);
-                    response = new AsyncOperation();
-                    response.setStatusCode(Response.Status.OK.getStatusCode());
-                    response.setOperation(Constants.DELETE_OPERATION);
-                    debugLog(LOGGER, "Actual Service Instance is not deleted as it's binding only request.: %s", Level.FINE, response);
                 }
-                else {
-                    response = serviceAdapter.deleteServiceInstance(instanceId, serviceId, planId, svcData);
-                    if (response.getStatusCode() == Response.Status.OK.getStatusCode() ||
-                            response.getStatusCode() == Response.Status.GONE.getStatusCode()) {
-                        dataStore.removeServiceData(instanceId);
-                    }
-                    debugLog(LOGGER, "Service Delete response: %s", Level.FINE, response);
-                }
+                debugLog(LOGGER, "Service Delete response: %s", Level.FINE, response);
                 return response;
-
             });
             auditLog(RequestType.DELETE, instanceId, svc, opsResponse, svcData);
             return opsResponse;
@@ -581,15 +569,11 @@ public class OSBV2API {
                     Boolean acceptsIncomplete,
             @Context UriInfo uriInfo) {
         try {
-
             Service svc = (body != null) ? mapServices.get(body.getServiceId()) : null;
 
             Response opsResponse = executeAndReturnResponse(() -> {
 
-               ServiceAdapter serviceAdapter = validateAndGetAdapter(body.getServiceId());
-
-               boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(
-                        (Map<String, Object>) body.getParameters(), Constants.PROVISIONING, false);
+                ServiceAdapter serviceAdapter = validateAndGetAdapter(body.getServiceId());
 
                 ServiceAdapter planBroker = mapPlanToAdapters.get(body.getPlanId());
                 if (planBroker == null) throw Errors.planDoesNotExistError();
@@ -607,22 +591,18 @@ public class OSBV2API {
 
                 ServiceAdapter.ServiceInstanceStatus serviceInstanceStatus = serviceAdapter
                         .getOciServiceInstanceStatus(instanceId, body);
-
                 if (serviceInstanceStatus == ServiceAdapter.ServiceInstanceStatus.CONFLICT) {
                     throw new BrokerHttpException(Response.Status.CONFLICT.getStatusCode(),
                             "A Conflicting service with same ID or parameters already exists", "ServiceExists");
                 } else if (serviceInstanceStatus == ServiceAdapter.ServiceInstanceStatus.EXISTS) {
-                    ServiceInstanceProvision response = serviceAdapter.provisionExistingServiceInstance(instanceId, body);
+                    ServiceInstanceProvision response = serviceAdapter.provisionExistingServiceInstance(instanceId,
+                            body);
                     if (response.getStatusCode() == Response.Status.ACCEPTED.getStatusCode()) {
                         response.setOperation(Constants.PROVISION_OPERATION);
                     }
                     dataStore.storeServiceData(instanceId, response.getSvcData());
                     debugLog(LOGGER, "Service Provision of existing service response: %s", Level.FINE, response);
                     return response;
-                } else if (!isProvisioningRequired && serviceInstanceStatus == ServiceAdapter.ServiceInstanceStatus.DOESNOTEXIST) {
-                    // it's just for binding request.
-                    // If instance does not exist and provisioning flag set false we need to throw error.
-                    throw Errors.serviceDoesNotExistError();
                 }
 
                 Map<String, String> freeFormTags;
@@ -703,10 +683,6 @@ public class OSBV2API {
                 }
                 debugLog(LOGGER, "Service Update request; ServiceId:%s PlanId: %s", Level.FINE, existingServiceId,
                         existingPlanId);
-
-                if (!svcData.getProvisioning().booleanValue()) {
-                    throw Errors.unSupportedOperation();
-                }
 
                 String newPlanId = body.getPlanId();
                 if (newPlanId != null && mapPlanToAdapters.get(newPlanId) == null) {

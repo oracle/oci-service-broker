@@ -38,9 +38,7 @@ Samples for creating Service Instances and Bindings using `oci-service-broker`, 
 
 ## Troubleshooting
 
-You can use the [diagnostics tool](charts/oci-service-broker/tools/diagnostics_tool.sh) to help identify the common issues in the installation.
-
-Also see [Troubleshooting](charts/oci-service-broker/docs/troubleshoot.md#troubleshooting-guide-for-oci-service-broker) document for details on debugging common and known issues.
+See [Troubleshooting](charts/oci-service-broker/docs/troubleshoot.md#troubleshooting-guide-for-oci-service-broker) document for details on debugging common and known issues.
 
 ## Changes
 

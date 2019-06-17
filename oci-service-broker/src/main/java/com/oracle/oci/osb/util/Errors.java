@@ -44,7 +44,6 @@ public class Errors {
     public static final String MISSING_ORIGINATING_IDENTITY_HEADER = "MissingOriginatingIdentityHeader";
     public static final String INVALID_ORIGINATING_IDENTITY = "InvalidOriginatingIdentity";
     public static final String UNSUPPORTED_API_VERSION = "UnsupportedAPIVersion";
-    public static final String UNSUPPORTED_OPERATION= "UnsupportedOperation";
 
 
     /**
@@ -153,14 +152,6 @@ public class Errors {
     public static BrokerHttpException planDoesNotExistError() {
         return new BrokerHttpException(BAD_REQUEST_STATUS_CODE,
                 "The plan does not exist", PLAN_DOES_NOT_EXIST);
-    }
-
-    /**
-     * @return exception to be thrown if a plan with provided id does not exist
-     */
-    public static BrokerHttpException unSupportedOperation() {
-        return new BrokerHttpException(BAD_REQUEST_STATUS_CODE,
-                "The update request is not supported for binding only Instance.", UNSUPPORTED_OPERATION);
     }
 
     /**

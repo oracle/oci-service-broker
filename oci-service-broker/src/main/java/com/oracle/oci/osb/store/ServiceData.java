@@ -22,8 +22,6 @@ public class ServiceData {
 
     private String compartmentId;
 
-    private Boolean provisioning = Boolean.TRUE;
-
     // Used for storing service specific attributes.
     private HashMap<String, String> metadata = new HashMap<>();
 
@@ -65,14 +63,6 @@ public class ServiceData {
 
     public void setCompartmentId(String compartmentId) {
         this.compartmentId = compartmentId;
-    }
-
-    public Boolean getProvisioning() {
-        return provisioning;
-    }
-
-    public void setProvisioning(Boolean provisioning) {
-        this.provisioning = provisioning;
     }
 
     /**

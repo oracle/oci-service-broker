@@ -2,7 +2,7 @@
 
 * [Restrict access to Service Catalog resources using RBAC](#restrict-access-to-service-catalog-resources-using-rbac)
   * [Read-only access](#read-only-access)
-  * [Full access](#full-access)
+  * [Full acccess](#full-acccess)
 * [TLS enable endpoint](#tls-enable-endpoint)
 * [Restrict access of the OCI User used by OCI Service Broker](#restrict-access-of-the-oci-user-used-by-oci-service-broker)
   * [OCI User Capabilities](#oci-user-capabilities)
@@ -44,7 +44,7 @@ rules:
 kubectl create rolebinding servicecatalog.k8s.io:service-read:usera --clusterrole=servicecatalog.k8s.io:servicebroker:read-only --user=<USER>
 ```
 
-### Full access
+### Full acccess
 
 The below role gives full permissions, including creating/deleting Services and getting binding details to access the Services. Hence this permission should be given only to limited entites that are required to manage services.
 

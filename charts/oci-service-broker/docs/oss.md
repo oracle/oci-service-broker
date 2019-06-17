@@ -4,15 +4,12 @@
 - [Plans](#plans)
 - [OCI User Permission requirement](#oci-user-permission-requirement)
 - [Service Provision Request Parameters](#service-provision-request-parameters)
-    - [Provisioning a new OSS Service Instance](#provisioning-a-new-oss-service-instance)
-    - [Using an Existing OSS Service Instance](#using-an-existing-oss-service-instance)
 - [Service Binding](#service-binding)
   - [Request Parameters](#request-parameters)
   - [Response Credentials](#response-credentials)
 - [Example](#example)
   - [Kubernetes](#kubernetes)
-    - [Creating a New OSS Instance](#creating-a-new-oss-instance)
-    - [Using an Existing OSS Instance](#using-an-existing-oss-instance)
+    - [Provisioning](#provisioning)
     - [Binding](#binding)
 
 ## Introduction
@@ -37,8 +34,6 @@ Allow group <SERVICE_BROKER_GROUP> to manage streams in compartment <COMPARTMENT
 
 ## Service Provision Request Parameters
 
-### Provisioning a new OSS Service Instance
-
 The request parameters for Service provisioning are
 
 | Parameter     | Description                                                   | Type   | Mandatory |
@@ -48,19 +43,6 @@ The request parameters for Service provisioning are
 | partitions    | The number of partitions of the stream                        | number | Yes       |
 | freeFormTags  | The free form tags of the bucket                              | object | No        |
 | definedTags   | The defined tags of the bucket                                | object | No        |
-
-## Using an Existing OSS Service Instance
-
-For more information about binding to an existing OSS service instance, see [Using an Existing Service Instance](services.md#using-an-existing-service-instance).
-
-The request parameters for the existing Service provisioning are:
-
-| Parameter        | Description                                                  | Type    | Mandatory |
-| ---------------- | ------------------------------------------------------------ | ------  | --------- |
-| `ocid`           | The OCID for existing stream.                                | string  | yes       |
-| `provisioning`   | Set provisioning flag value as false.                        | boolean | yes       |
-
-OCI Service broker will not provision the new instance or manage the lifecycle of instance.  
 
 ## Service Binding
 
@@ -80,7 +62,7 @@ An OCI user credential can be used to connect to the stream using streamId. The 
 
 ### Kubernetes
 
-#### Creating a New OSS Instance
+#### Provisioning
 
 Create a stream
 
@@ -97,24 +79,6 @@ spec:
    name: "StreamName"
    compartmentId: "CompartmentOCID"
    partitions: "5"
-```
-
-#### Using an Existing OSS Instance
-
-Provision Existing stream
-
-```yaml
-apiVersion: servicecatalog.k8s.io/v1beta1
-kind: ServiceInstance
-metadata:
- name: "StreamName"
-spec:
- clusterServiceClassExternalName: "oss-service"
- clusterServicePlanExternalName: "standard"
- parameters:
-   name: "StreamName"
-   ocid: "OCIDStream"
-   provisioning: false
 ```
 
 #### Binding
