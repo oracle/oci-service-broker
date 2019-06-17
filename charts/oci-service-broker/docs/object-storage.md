@@ -4,16 +4,15 @@
 - [Plans](#plans)
 - [OCI User Permission requirement](#oci-user-permission-requirement)
 - [Service Provision Request Parameters](#service-provision-request-parameters)
-    - [Provisioning a new Service Instance](#provisioning-a-new-service-instance)
-    - [Attaching an Existing Service Instance](#attaching-an-existing-service-instance)
-- [Service Provision Request Parameters for Existing Instance](#service-provision-request-parameters-for-existing-service-instance)
+    - [Provisioning a new Object Storage Service Instance](#provisioning-a-new-object-storage-service-instance)
+    - [Using an Existing Object Storage Service Instance](#using-an-existing-object-storage-instance)
 - [Service Binding](#service-binding)
   - [Request Parameters](#request-parameters)
   - [Response Credentials](#response-credentials)
 - [Example](#example)
   - [Kubernetes](#kubernetes)
-    - [Creating a New Instance](#creating-a-new-instance)
-    - [Attaching an Existing Instance](#attaching-an-existing-instance)
+    - [Creating a New Object Storage Instance](#creating-a-new-object-storage-instance)
+    - [Using an Existing Object Storage Instance](#using-an-existing-object-storage-instance)
     - [Binding](#binding)
 
 ## Introduction
@@ -41,7 +40,7 @@ Allow group <SERVICE_BROKER_GROUP> to manage buckets in compartment <COMPARTMENT
 
 ### Service Provision Request Parameters
 
-## Provisioning a new Service Instance
+## Provisioning a new Object Storage Service Instance
 
 The request parameters for Service provisioning are:
 
@@ -55,9 +54,9 @@ The request parameters for Service provisioning are:
 | metadata         | The metadata of the bucket                                   | object | No        |
 | publicAccessType | The public access type of the bucket. Valid values are NoPublicAccess, ObjectRead and ObjectReadWithoutList. Default is NoPublicAccess | string | No        |
 
-## Attaching an Existing Service Instance
+## Using an Existing Object Storage Service Instance
 
-For more information about binding to an existing Object Storage service instance, see [Attaching an Existing Service Instance](services.md#attaching-an-existing-service-instance).
+For more information about binding to an existing Object Storage service instance, see [Using an Existing Service Instance](services.md#using-an-existing-service-instance).
 
 The request parameters for the existing Service provisioning are:
 
@@ -90,7 +89,7 @@ Service Binding is optional in case of this service. OCI User credentials can be
 
 ### Kubernetes
 
-#### Creating a New Instance
+#### Creating a New Object Storage Instance
 
 Create a bucket
 
@@ -146,7 +145,7 @@ spec:
    publicAccessType: "ObjectRead"
 ```
 
-#### Attaching an Existing Instance
+#### Using an Existing Object Storage Instance
 
 Provision Existing bucket
 

@@ -4,8 +4,8 @@
 - [Plans](#plans)
 - [OCI User Permission requirement](#oci-user-permission-requirement)
 - [Service Provision Request Parameters](#service-provision-request-parameters)
-    - [Provisioning a new ADW Service Instance](#provisioning-a-new-atp-service-instance)
-    - [Attaching an Existing ADW Service Instance](#attaching-an-existing-atp-service-instance)
+    - [Provisioning a new ATP Service Instance](#provisioning-a-new-atp-service-instance)
+    - [Using an Existing ATP Service Instance](#using-an-existing-atp-service-instance)
 - [Service Binding Request Parameters](#service-binding-request-parameters)
 - [Service Binding Response Credentials](#service-binding-response-credentials)
 - [Examples](#examples)
@@ -13,8 +13,8 @@
     - [OCI Service Broker](#oci-service-broker)
     - [Sample files](#sample-files)
   - [Provisioning](#provisioning)
-    - [Creating an ATP ServiceInstance](#creating-a-new-atp-serviceinstance)
-    - [Attaching an Existing ATP ServiceInstance](#attaching-an-existing-atp-serviceinstance)
+    - [Creating an ATP Instance](#creating-a-new-atp-instance)
+    - [Using an Existing ATP Instance](#using-an-existing-atp-instance)
     - [Get instance status](#get-instance-status)
   - [Binding](#binding)
     - [Creating an ATP ServiceBinding resource](#creating-an-atp-servicebinding-resource)
@@ -63,9 +63,9 @@ To provision, an ATP service user needs to provide the following details:
 | `freeFormTags`   | free form tags that are to be used for tagging the ATP instance.    | object | no        |
 | `definedTags`    | The defined tags that are to be used for tagging the ATP instance.  | object | no        |
 
-## Attaching an Existing ATP Service Instance
+## Using an Existing ATP Service Instance
 
-For more information about binding to an existing ATP service instance, see [Attaching an Existing Service Instance](services.md#attaching-an-existing-service-instance).
+For more information about binding to an existing ATP service instance, see [Using an Existing Service Instance](services.md#using-an-existing-service-instance).
 
 To attach to an existing ATP service, the user needs to provide the following details. In this case, OCI Service broker will neither provision a new instance nor update/change the existing instance.
 
@@ -142,7 +142,7 @@ Providing password in plain text may not be an idle case. Alternatively, the use
 
 Please refer [Use Secret to pass passwords](#use-secret-to-pass-passwords) section for passing the password from secrets.
 
-#### Creating a New ATP ServiceInstance
+#### Creating a New ATP Instance
 
 **NOTE:**
 The  [`atp-instance-plain.yaml`](../samples/atp/atp-instance-plain.yaml) files contain the compartment OCID in which the user wants to provision the ATP instance. The user needs to update it with their compartment OCID.
@@ -151,7 +151,7 @@ The  [`atp-instance-plain.yaml`](../samples/atp/atp-instance-plain.yaml) files c
 kubectl create -f charts/oci-service-broker/samples/atp/atp-instance-plain.yaml
 ```
 
-#### Attaching an existing ATP ServiceInstance
+#### Using an existing ATP Instance
 
 **NOTE:**
 The  [`atp-existing-instance.yaml`](../samples/atp/atp-existing-instance.yaml) files contain the instance OCID and compartment OCID which the user wants to provision as existing ATP instance. The user needs to update it with their instance OCID and compartment OCID.

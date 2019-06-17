@@ -5,7 +5,7 @@
 - [OCI User Permission requirement](#oci-user-permission-requirement)
 - [Service Provision Request Parameters](#service-provision-request-parameters)
     - [Provisioning a new ADW Service Instance](#provisioning-a-new-adw-service-instance)
-    - [Attaching an Existing ADW Service Instance](#attaching-an-existing-adw-service-instance)
+    - [Using an Existing ADW Service Instance](#using-an-existing-adw-service-instance)
 - [Service Binding Request Parameters](#service-binding-request-parameters)
 - [Service Binding Response Credentials](#service-binding-response-credentials)
 - [Examples](#examples)
@@ -13,8 +13,8 @@
     - [OCI Service Broker](#oci-service-broker)
     - [Sample files](#sample-files)
   - [Provisioning](#provisioning)
-    - [Creating a new ADW ServiceInstance](#creating-a-new-adw-serviceinstance)
-    - [Attaching an Existing ADW ServiceInstance](#attaching-an-existing-adw-serviceinstance)   
+    - [Creating a new ADW Instance](#creating-a-new-adw-instance)
+    - [Using an Existing ADW Instance](#using-an-existing-adw-instance)   
     - [Get instance status](#get-instance-status)  
   - [Binding](#binding)
     - [Creating an ADW ServiceBinding resource](#creating-an-adw-servicebinding-resource)
@@ -63,9 +63,9 @@ To provision, an ADW service user needs to provide the following details:
 | `freeFormTags`   | free form tags that are to be used for tagging the ADW instance.    | object | no        |
 | `definedTags`    | The defined tags that are to be used for tagging the ADW instance.  | object | no        |
 
-## Attaching an Existing ADW Service Instance
+## Using an Existing ADW Service Instance
 
-For more information about binding to an existing ADW service instance, see [Attaching an Existing Service Instance](services.md#attaching-an-existing-service-instance).
+For more information about binding to an existing ADW service instance, see [Using an Existing Service Instance](services.md#using-an-existing-service-instance).
 
 To attach to an existing ADW service, the user needs to provide the following details. In this case, OCI Service broker will neither provision a new instance nor update/change the existing instance.
 
@@ -143,7 +143,7 @@ Providing password in plain text may not be an idle case. Alternatively, the use
 
 Please refer [Use Secret to pass passwords](#use-secret-to-pass-passwords) section for passing the password from secrets.
 
-#### Creating a new ADW ServiceInstance
+#### Creating a new ADW Instance
 
 **NOTE:**
 The [`adw-instance-plain.yaml`](../samples/adw/adw-instance-plain.yaml) files contain the compartment OCID in which the user wants to provision the ADW instance. The user needs to update it with their compartment OCID.
@@ -152,7 +152,7 @@ The [`adw-instance-plain.yaml`](../samples/adw/adw-instance-plain.yaml) files co
 kubectl create -f charts/oci-service-broker/samples/adw/adw-instance-plain.yaml
 ```
 
-#### Attaching an existing ADW ServiceInstance
+#### Using an existing ADW Instance
 
 **NOTE:**
 The  [`adw-existing-instance.yaml`](../samples/adw/adw-existing-instance.yaml) files contain the instance OCID and compartment OCID which the user wants to provision as existing ADW instance. The user needs to update it with their instance OCID and compartment OCID.
