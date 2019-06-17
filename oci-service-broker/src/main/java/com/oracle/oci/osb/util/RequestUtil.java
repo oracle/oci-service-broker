@@ -5,6 +5,8 @@
 
 package com.oracle.oci.osb.util;
 
+import com.oracle.bmc.OCID;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -33,11 +35,39 @@ public class RequestUtil {
      * @return parameter value.
      */
     public static String getStringParameter(Map mapParameters, String key, boolean mandatory) {
-        Object parameter = mapParameters.get(key);
-        if (parameter == null && mandatory) {
-            throw Errors.missingParameter(key);
+        if (mapParameters!=null) {
+            Object parameter = mapParameters.get(key);
+            if (parameter == null && mandatory) {
+                throw Errors.missingParameter(key);
+            }
+            return getStringObject(parameter);
+        } else {
+            return null;
         }
-        return getStringObject(parameter);
+    }
+
+    /**
+     * Returns the value of parameter {@code key} that is of type Boolean. Throws
+     * an exception if {@code mandatory} is true and the value is empty or not
+     * present. Returns default value as TRUE.
+     *
+     * @param mapParameters
+     * @param key
+     * @param mandatory
+     * @return parameter value.
+     */
+    public static boolean getBooleanParameterDefaultValueTrue(Map mapParameters, String key, boolean mandatory) {
+        if (mapParameters!=null) {
+            Object parameter = mapParameters.get(key);
+            if (parameter == null && mandatory) {
+                throw Errors.missingParameter(key);
+            } if (parameter != null && !parameter.toString().trim().equals("")) {
+                return Boolean.valueOf(parameter.toString());
+            }
+            return Boolean.TRUE;
+        } else {
+            return Boolean.TRUE;
+        }
     }
 
     /**
@@ -50,7 +80,7 @@ public class RequestUtil {
      */
     public static String getNonEmptyStringParameter(Map mapParameters, String key) {
         String value = getStringParameter(mapParameters, key, true);
-        if(Utils.isNullOrEmptyString(value)) {
+        if (Utils.isNullOrEmptyString(value)) {
             throw Errors.invalidParameter(key);
         }
         return value;
@@ -79,7 +109,7 @@ public class RequestUtil {
             if (parameter instanceof Integer || parameter instanceof Short) {
                 return (Integer) parameter;
             } else {
-                if(parameter.toString().chars().allMatch(Character::isDigit)) {
+                if (parameter.toString().chars().allMatch(Character::isDigit)) {
                     try {
                         return Integer.parseInt(parameter.toString());
                     } catch(NumberFormatException e){
@@ -196,6 +226,17 @@ public class RequestUtil {
             context.abortWith(response);
             throw new RuntimeException(msg);
         }
+    }
+
+    public static boolean isValidOCID(String ocid) {
+        return OCID.isValid(ocid);
+    }
+
+    public static Map validateParamsExists(Object params){
+        if (params == null || !(params instanceof Map)) {
+            throw Errors.missingParameters();
+        }
+        return (Map) params;
     }
 
 }
