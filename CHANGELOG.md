@@ -5,8 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+[1.2.1]
+
+- Minor Update to use unified API for ATP/ADW service. Internal change with no customer impact
+
+[1.2.0]
+
+- Adding Support to Bind Existing Service Instance for all supported services
+- Adding Diagnostic Tool to help identify the common issues during installation
+- Minor Document Fixes
+
 [1.1.1]
 
+- Adding support for Seoul (ICN) region
 - Minor Document Fixes
 - Bug Fixes
 

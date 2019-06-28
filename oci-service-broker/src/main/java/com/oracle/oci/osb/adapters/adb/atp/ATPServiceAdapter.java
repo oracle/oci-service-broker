@@ -18,14 +18,8 @@ import com.oracle.oci.osb.util.Constants;
 public class ATPServiceAdapter extends AutonomousDatabaseAdapter {
 
     @Override
-    protected AutonomousDatabaseOCIClient getOCIClient(AuthenticationDetailsProvider authProvider, String
-            compartmentId) {
-        return new ATPServiceOCIClient(authProvider, compartmentId);
-    }
-
-    @Override
     protected String getInstanceTypeString() {
-        return AutonomousDatabaseInstance.TYPE.ATP.name();
+        return AutonomousDatabaseAdapter.DBWorkloadType.ATP.name();
 
     }
 

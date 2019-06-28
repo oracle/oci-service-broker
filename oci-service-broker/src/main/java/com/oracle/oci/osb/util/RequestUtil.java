@@ -232,11 +232,11 @@ public class RequestUtil {
         return OCID.isValid(ocid);
     }
 
+    //TODO Modify the return type to include GENERICS
     public static Map validateParamsExists(Object params){
         if (params == null || !(params instanceof Map)) {
             throw Errors.missingParameters();
         }
         return (Map) params;
     }
-
 }

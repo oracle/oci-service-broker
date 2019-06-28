@@ -105,10 +105,12 @@ public class ServiceData {
         return metadata.remove(key);
     }
 
+    @Deprecated
     public HashMap<String, String> getMetadata() {
         return metadata;
     }
 
+    @Deprecated
     public void setMetadata(HashMap<String, String> metadata) {
         this.metadata = metadata;
     }
