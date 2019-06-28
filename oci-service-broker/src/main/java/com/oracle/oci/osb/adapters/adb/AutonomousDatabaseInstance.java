@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class AutonomousDatabaseInstance {
     private String id;
-    private TYPE type;
+    private AutonomousDatabaseAdapter.DBWorkloadType dbWorkloadType;
     private String displayName;
     private int cpuCoreCount;
     private int storageSizeInGBs;
@@ -30,10 +30,10 @@ public class AutonomousDatabaseInstance {
     }
 
 
-    public AutonomousDatabaseInstance(String id, TYPE type, String displayName, int cpuCoreCount, int
+    public AutonomousDatabaseInstance(String id, AutonomousDatabaseAdapter.DBWorkloadType dbWorkloadType, String displayName, int cpuCoreCount, int
             storageSizeInGBs, String dbName, AutonomousDatabaseAdapter.LicenseModel licenseModel, Map<String, String> freeformTags, LifecycleState lifecycleState) {
         this.id = id;
-        this.type = type;
+        this.dbWorkloadType = dbWorkloadType;
         this.displayName = displayName;
         this.cpuCoreCount = cpuCoreCount;
         this.storageSizeInGBs = storageSizeInGBs;
@@ -56,8 +56,8 @@ public class AutonomousDatabaseInstance {
         return id;
     }
 
-    public TYPE getType() {
-        return type;
+    public AutonomousDatabaseAdapter.DBWorkloadType getDbWorkloadType() {
+        return dbWorkloadType;
     }
 
     public String getDbName() {

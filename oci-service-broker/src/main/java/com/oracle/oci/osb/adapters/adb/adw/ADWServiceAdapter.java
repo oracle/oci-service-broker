@@ -18,14 +18,8 @@ import com.oracle.oci.osb.util.Constants;
 public class ADWServiceAdapter extends AutonomousDatabaseAdapter {
 
     @Override
-    protected AutonomousDatabaseOCIClient getOCIClient(AuthenticationDetailsProvider authProvider, String
-            compartmentId) {
-        return new ADWServiceOCIClient(authProvider, compartmentId);
-    }
-
-    @Override
     protected String getInstanceTypeString() {
-        return AutonomousDatabaseInstance.TYPE.ADW.name();
+        return AutonomousDatabaseAdapter.DBWorkloadType.ADW.name();
     }
 
     @Override

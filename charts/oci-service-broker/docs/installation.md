@@ -69,7 +69,7 @@ brew update && brew install kubernetes-service-catalog-client
 The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes. The chart is available at [charts/oci-service-broker](../) directory.
 
 ```plain
-https://github.com/oracle/oci-service-broker/releases/download/v1.2.0/oci-service-broker-1.2.0.tgz
+https://github.com/oracle/oci-service-broker/releases/download/v1.2.0/oci-service-broker-1.2.1.tgz
 ```
 
 ### OCI credentials

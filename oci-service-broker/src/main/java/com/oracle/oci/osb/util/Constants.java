@@ -18,6 +18,7 @@ public class Constants {
     public static final String METADATA = "metadata";
     public static final String OSB_INSTANCE_ID_LABEL = "OCIOSBServiceInstanceId";
     public static final String COMPARTMENT_ID = "compartmentId";
+    public static final String DB_WORKLOAD_TYPE = "workloadType";
     public static final String REGION_ID = "regionId";
     public static final String NAME = "name";
     public static final String FINGERPRINT = "fingerprint";

@@ -8,6 +8,7 @@ package com.oracle.oci.osb.adapters.adb;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
+import com.oracle.bmc.database.model.CreateAutonomousDatabaseBase;
 import com.oracle.bmc.model.BmcException;
 import com.oracle.oci.osb.adapter.ServiceAdapter;
 import com.oracle.oci.osb.model.*;
@@ -68,6 +69,15 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         BYOL, NEW, UNKNOWN
     }
 
+    /**
+     * Available Autonomous Database Workload options.
+     * OLTP - Autonomous Transaction Processing Database.
+     * DW   - Autonomous Data Warehouse Database.
+     */
+    public enum DBWorkloadType {
+        ATP, ADW
+    }
+
     private static final String DEFAULT_DB_USER_NAME = "ADMIN";
 
     private final String ADB_INSTANCE_ID = getInstanceTypeString() + "-Id";
@@ -77,9 +87,6 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
     public AutonomousDatabaseAdapter() {
         provider = new SystemPropsAuthProvider().getAuthProvider();
     }
-
-    protected abstract AutonomousDatabaseOCIClient getOCIClient(AuthenticationDetailsProvider authProvider, String
-            compartmentId);
 
     protected abstract String getInstanceTypeString();
 
@@ -94,26 +101,23 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
 
     @Override
     public ServiceInstanceStatus getOciServiceInstanceStatus(String instanceId, ServiceInstanceProvisionRequest body) {
+        Map reqParams = RequestUtil.validateParamsExists(body.getParameters());
+        boolean isProvisioningRequired =
+                RequestUtil.getBooleanParameterDefaultValueTrue(reqParams, Constants.PROVISIONING, false);
 
-        checkParamsExists(body.getParameters());
-        @SuppressWarnings("unchecked")
-        Map<String, Object> reqParams = (Map<String, Object>) body.getParameters();
-        boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(reqParams, Constants.PROVISIONING, false);
-
-        if(isProvisioningRequired) {
+        if (isProvisioningRequired) {
             return getOciServiceInstanceStatusForProvisioning(instanceId, reqParams);
-        }
-        else {
+        } else {
             return getOciServiceInstanceStatusForBinding(reqParams);
         }
     }
 
-    private ServiceInstanceStatus getOciServiceInstanceStatusForProvisioning(String instanceId, Map<String, Object> reqParams) {
+    private ServiceInstanceStatus getOciServiceInstanceStatusForProvisioning(String instanceId, Map reqParams) {
 
         String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
         String name = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_NAME);
 
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
             AutonomousDatabaseInstance autonomousDatabaseInstance = instanceExists(adbServiceClient
                     .listInstances(compartmentId, name), instanceId);
             if (autonomousDatabaseInstance == null) {
@@ -128,7 +132,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         }
     }
 
-    private ServiceInstanceStatus getOciServiceInstanceStatusForBinding(Map<String, Object> reqParams) {
+    private ServiceInstanceStatus getOciServiceInstanceStatusForBinding(Map reqParams) {
 
         String ocId = RequestUtil.getNonEmptyStringParameter(reqParams, Constants.OCID);
         if(!RequestUtil.isValidOCID(ocId)) {
@@ -136,7 +140,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         }
         String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
 
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
             AutonomousDatabaseInstance autonomousDatabaseInstance = adbServiceClient.get(ocId);
             if (autonomousDatabaseInstance == null) {
                 return ServiceInstanceStatus.DOESNOTEXIST;
@@ -154,13 +158,12 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         String serviceId = body.getServiceId();
         String planId = body.getPlanId();
 
-        checkParamsExists(body.getParameters());
-
-        Map<String, Object> reqParams = (Map<String, Object>) body.getParameters();
-        boolean isProvisioningRequired = RequestUtil.getBooleanParameterDefaultValueTrue(reqParams, Constants.PROVISIONING, false);
+        Map reqParams = RequestUtil.validateParamsExists(body.getParameters());
+        boolean isProvisioningRequired =
+                RequestUtil.getBooleanParameterDefaultValueTrue(reqParams, Constants.PROVISIONING, false);
         String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
 
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
 
             //Provision
             String name = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_NAME);
@@ -172,21 +175,25 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             adbSvcData.setProvisioning(isProvisioningRequired);
 
             //Check oci and provision if instance doesn't exists already
-            if(isProvisioningRequired) {
+            if (isProvisioningRequired) {
                 AutonomousDatabaseInstance autonomousDatabaseInstance = instanceExists(adbServiceClient
                         .listInstances(compartmentId, name), instanceId);
 
-                //instance already exists!
-                adbSvcData.setOcid(autonomousDatabaseInstance.getId());
-                response.setSvcData(adbSvcData);
-                if(autonomousDatabaseInstance.getLifecycleState() == AutonomousDatabaseInstance.LifecycleState.Available) {
-                    response.setStatusCode(Response.Status.OK.getStatusCode());
-                } else {
-                    response.setStatusCode(Response.Status.ACCEPTED.getStatusCode());
+                if (autonomousDatabaseInstance != null) {
+                    //instance already exists!
+                    adbSvcData.setOcid(autonomousDatabaseInstance.getId());
+                    adbSvcData.putMetadata(Constants.DB_WORKLOAD_TYPE, autonomousDatabaseInstance.getDbWorkloadType().toString());
+                    response.setSvcData(adbSvcData);
+                    if (autonomousDatabaseInstance.getLifecycleState() == AutonomousDatabaseInstance.LifecycleState.Available) {
+                        response.setStatusCode(Response.Status.OK.getStatusCode());
+                    } else {
+                        response.setStatusCode(Response.Status.ACCEPTED.getStatusCode());
+                    }
                 }
             } else {
                 String ocId = RequestUtil.getNonEmptyStringParameter(reqParams, Constants.OCID);
                 adbSvcData.setOcid(ocId);
+                adbSvcData.putMetadata(Constants.DB_WORKLOAD_TYPE, getInstanceTypeString());
                 response.setSvcData(adbSvcData);
                 response.setStatusCode(Response.Status.OK.getStatusCode());
             }
@@ -205,17 +212,15 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
     @SuppressWarnings("unchecked")
     public ServiceInstanceProvision provisionServiceInstance(String instanceId, ServiceInstanceProvisionRequest body,
                                                              Map<String, String> freeFormTags) {
+
         String serviceId = body.getServiceId();
         String planId = body.getPlanId();
         LOGGER.finest("Provision request invoked");
         ServiceInstanceProvision response = new ServiceInstanceProvision();
-
-        checkParamsExists(body.getParameters());
-
-        Map<String, Object> reqParams = (Map<String, Object>) body.getParameters();
-
+        Map reqParams = RequestUtil.validateParamsExists(body.getParameters());
         String compartmentId = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_COMPARTMENT_ID);
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
 
             //Provision
             String name = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_NAME);
@@ -223,11 +228,11 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             Integer cpuCount = RequestUtil.getIntegerParameter(reqParams, REQ_PARAM_CPU_COUNT, true);
             Integer storageSize = RequestUtil.getIntegerParameter(reqParams, REQ_PARAM_STORAGE_SIZE_TB, true);
             String password = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_PASSWORD);
-            String licenseModelStr =  RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_LICENSE_MODEL);
+            String licenseModelStr = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_LICENSE_MODEL);
             Map<String, Map<String, Object>> definedTags = RequestUtil.getMapMapObjectParameter(reqParams, Constants
                     .DEFINED_TAGS, false);
-            if( !(LicenseModel.NEW.toString().equalsIgnoreCase(licenseModelStr) || LicenseModel.BYOL.toString()
-                    .equalsIgnoreCase(licenseModelStr))){
+            if (!(LicenseModel.NEW.toString().equalsIgnoreCase(licenseModelStr) || LicenseModel.BYOL.toString()
+                    .equalsIgnoreCase(licenseModelStr))) {
                 LOGGER.severe("Invalid License Model : " + licenseModelStr);
                 throw Errors.invalidParameter(REQ_PARAM_LICENSE_MODEL);
             }
@@ -240,14 +245,15 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             adbSvcData.setPlanId(planId);
             adbSvcData.setCompartmentId(compartmentId);
             adbSvcData.setProvisioning(true);
+            adbSvcData.putMetadata(Constants.DB_WORKLOAD_TYPE, getInstanceTypeString().toUpperCase());
 
-            AutonomousDatabaseInstance autonomousDatabaseInstance = adbServiceClient.create(name, dbName, cpuCount,
-                    storageSize, freeFormTags, definedTags, password, isLicenseIncluded);
+            AutonomousDatabaseInstance autonomousDatabaseInstance = adbServiceClient.create(name, dbName,
+                    getDBWorkload(getInstanceTypeString()), cpuCount, storageSize, freeFormTags, definedTags, password, isLicenseIncluded);
 
-             adbSvcData.setOcid(autonomousDatabaseInstance.getId());
-             response.setStatusCode(HTTP_ACCEPTED);
+            adbSvcData.setOcid(autonomousDatabaseInstance.getId());
+            response.setStatusCode(HTTP_ACCEPTED);
 
-            if(autonomousDatabaseInstance.getId() == null || "".equals(autonomousDatabaseInstance.getId().trim())) {
+            if (autonomousDatabaseInstance.getId() == null || "".equals(autonomousDatabaseInstance.getId().trim())) {
                 LOGGER.severe("OCID not  found in the create response!!!");
             }
             response.setSvcData(adbSvcData);
@@ -270,23 +276,21 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
 
         LOGGER.finest("Update request received.");
         ServiceInstanceAsyncOperation response = new ServiceInstanceAsyncOperation();
-
-        //Validate request
-        if (body.getParameters() != null && !(body.getParameters() instanceof Map)) {
-            LOGGER.severe("parameters value in the request body is not a Map!");
-            throw Errors.invalidParameters();
-        }
-
         String compartmentId = svcData.getCompartmentId();
 
+        //Validate request
         if (body.getParameters() == null) {
             // no changes in parameters. Hence return success.
             LOGGER.fine("parameters in the request body is empty. Update not required");
             response.setStatusCode(HTTP_OK);
             return response;
+        } else {
+            if (!(body.getParameters() instanceof Map)) {
+                LOGGER.severe("parameters value in the request body is not a Map!");
+                throw Errors.invalidParameters();
+            }
         }
 
-        @SuppressWarnings("unchecked")
         Map<String, Object> params = (Map<String, Object>) body.getParameters();
 
         String name = RequestUtil.getStringParameter(params, REQ_PARAM_NAME, false);
@@ -300,7 +304,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         Map<String, Map<String, Object>> definedTags = RequestUtil.getMapMapObjectParameter(params, Constants
                 .DEFINED_TAGS, false);
 
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
             adbServiceClient.update(svcData.getOcid(), name, cpuCount, storageSize, tags, definedTags);
             response.setStatusCode(HTTP_ACCEPTED);
         } catch(UpdateNotRequiredException ue) {
@@ -331,7 +335,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         //Check data store
         String compartmentId = svcData.getCompartmentId();
 
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
             adbServiceClient.delete(svcData.getOcid());
             response.setStatusCode(HTTP_ACCEPTED);
         } catch (BmcException x) {
@@ -362,11 +366,10 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
 
         LastOperationResource response = new LastOperationResource();
         String compartmentId = svcData.getCompartmentId();
-
         AutonomousDatabaseInstance autonomousDatabaseInstance;
 
         //Get instance details from OCI. If instance not found and it is delete operation then it is considered success.
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
             autonomousDatabaseInstance = adbServiceClient.get(svcData.getOcid());
         } catch (Exception x) {
             if ( x instanceof  BmcException && ((BmcException)  x).getStatusCode() == HTTP_NOT_FOUND && Constants
@@ -445,21 +448,14 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         LOGGER.finest("Service bind request received.");
 
         ServiceBinding response = new ServiceBinding();
-        checkParamsExists(request.getParameters());
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> reqParams = (Map<String, Object>) request.getParameters();
+        Map reqParams = RequestUtil.validateParamsExists(request.getParameters());
 
         String walletPassword = RequestUtil.getNonEmptyStringParameter(reqParams, BINDING_PARAM_WALLET_PASSWORD);
-
         String compartmentId = svcData.getCompartmentId();
 
         AutonomousDatabaseInstance autonomousDatabaseInstance;
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
+        try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
             autonomousDatabaseInstance = adbServiceClient.get(svcData.getOcid());
-        }
-
-        try (AutonomousDatabaseOCIClient adbServiceClient = getOCIClient(provider, compartmentId)) {
             Map<String, String> creds = adbServiceClient.getCredentials(autonomousDatabaseInstance
                     .getId(), autonomousDatabaseInstance.getDbName(), walletPassword);
             creds.put(BINDING_RES_PARAM_USER_NAME, DEFAULT_DB_USER_NAME);
@@ -484,9 +480,9 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
      */
     @Override
     public ServiceBindingResource getServiceBinding(String bindingId, ServiceData svcData) {
-        ServiceBindingResource reponse = new ServiceBindingResource();
-        reponse.setStatusCode(HTTP_BAD_REQUEST);
-        return reponse;
+        ServiceBindingResource response = new ServiceBindingResource();
+        response.setStatusCode(HTTP_BAD_REQUEST);
+        return response;
     }
 
     /**
@@ -544,13 +540,15 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         return false;
     }
 
-    private void checkParamsExists(Object params){
-        if(!(params instanceof Map)) {
-            throw Errors.missingParameters();
-        }
+    public static class UpdateNotRequiredException extends RuntimeException {
     }
 
-    public static class UpdateNotRequiredException extends RuntimeException {
+    private CreateAutonomousDatabaseBase.DbWorkload getDBWorkload(String dbWorkloadType) {
+        if (dbWorkloadType.equalsIgnoreCase(DBWorkloadType.ATP.toString())) {
+            return CreateAutonomousDatabaseBase.DbWorkload.Oltp;
+        } else {
+            return CreateAutonomousDatabaseBase.DbWorkload.Dw;
+        }
     }
 }
 
