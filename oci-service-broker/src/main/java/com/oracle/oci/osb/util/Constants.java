@@ -75,4 +75,5 @@ public class Constants {
     public static final String POD_NAME = "POD_NAME";
     public static final String PROVISIONING = "provisioning";
     public static final String OCID = "ocid";
+    public static final String AUTOSCALING_ENABLED = "autoScaling";
 }

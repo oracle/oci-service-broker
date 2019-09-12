@@ -18,6 +18,7 @@ public class AutonomousDatabaseInstance {
     private int storageSizeInGBs;
     private String dbName;
     private AutonomousDatabaseAdapter.LicenseModel licenseModel;
+    private boolean autoScalingEnabled;
     private Map<String, String> freeformTags;
     private LifecycleState lifecycleState;
 
@@ -31,7 +32,8 @@ public class AutonomousDatabaseInstance {
 
 
     public AutonomousDatabaseInstance(String id, AutonomousDatabaseAdapter.DBWorkloadType dbWorkloadType, String displayName, int cpuCoreCount, int
-            storageSizeInGBs, String dbName, AutonomousDatabaseAdapter.LicenseModel licenseModel, Map<String, String> freeformTags, LifecycleState lifecycleState) {
+            storageSizeInGBs, String dbName, AutonomousDatabaseAdapter.LicenseModel licenseModel, boolean autoScalingEnabled,
+                                      Map<String, String> freeformTags, LifecycleState lifecycleState) {
         this.id = id;
         this.dbWorkloadType = dbWorkloadType;
         this.displayName = displayName;
@@ -41,6 +43,7 @@ public class AutonomousDatabaseInstance {
         this.licenseModel = licenseModel;
         this.freeformTags = freeformTags;
         this.lifecycleState = lifecycleState;
+        this.autoScalingEnabled = autoScalingEnabled;
     }
 
     public static LifecycleState lifecycleState(String lifecycleStateStr) {
@@ -75,6 +78,8 @@ public class AutonomousDatabaseInstance {
     public int getStorageSizeInGBs() {
         return storageSizeInGBs;
     }
+
+    public boolean isAutoScalingEnabled() { return autoScalingEnabled; }
 
     public LifecycleState getLifecycleState() {
         return lifecycleState;

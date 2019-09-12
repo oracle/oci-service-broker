@@ -58,7 +58,7 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
     public AutonomousDatabaseInstance create(String displayName, String dbName, CreateAutonomousDatabaseBase.DbWorkload type,
                                              int cpuCount, int StorageSize, Map<String, String> tags,
                                              Map<String, Map<String, Object>> definedTags, String password,
-                                             boolean licenseIncluded) {
+                                             boolean licenseIncluded, boolean autoScalingEnabled) {
         CreateAutonomousDatabaseDetails request = CreateAutonomousDatabaseDetails.builder()
                 .adminPassword(password)
                 .compartmentId(compartmentId)
@@ -72,6 +72,7 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
                 .licenseModel(licenseIncluded ? CreateAutonomousDatabaseDetails
                         .LicenseModel.LicenseIncluded : CreateAutonomousDatabaseDetails.LicenseModel
                         .BringYourOwnLicense)
+                .isAutoScalingEnabled(autoScalingEnabled)
                 .build();
         CreateAutonomousDatabaseResponse response = ociDBClient.createAutonomousDatabase
                 (CreateAutonomousDatabaseRequest.builder().createAutonomousDatabaseDetails(request).build());
@@ -90,10 +91,14 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
      * @param cpuCount    new number of CPU core.
      * @param StorageSize new DB storage size in Terabytes.
      * @param tags        new freeform tags.
+     * @param definedTags new defined tags.
+     * @param licenseModelStr New License Type for the existing DB Instance.
+     * @param autoScalingEnabled flag to enable autoscaling
      * @return AutonomousDatabase
      */
     public AutonomousDatabaseInstance update(String adOCID, String displayName, int cpuCount, int StorageSize,
-                                             Map<String, String> tags, Map<String, Map<String, Object>> definedTags) {
+                                             Map<String, String> tags, Map<String, Map<String, Object>> definedTags,
+                                             String licenseModelStr, boolean autoScalingEnabled) {
         AutonomousDatabase ad = getADInstance(adOCID);
         UpdateAutonomousDatabaseDetails.Builder reqBuilder = UpdateAutonomousDatabaseDetails.builder();
 
@@ -126,6 +131,22 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
             debugLog(LOGGER, "Defined tags to be updated.from:%s;to:%s", Level.FINE, ad.getDefinedTags(), definedTags);
             updateRequired = true;
         }
+        if (licenseModelStr != null) {
+            AutonomousDatabaseAdapter.LicenseModel licenseModel = AutonomousDatabaseAdapter.LicenseModel.valueOf(licenseModelStr.toUpperCase());
+            UpdateAutonomousDatabaseDetails.LicenseModel updateADDLicenseModel = (licenseModel == AutonomousDatabaseAdapter.LicenseModel.NEW) ? UpdateAutonomousDatabaseDetails
+                    .LicenseModel.LicenseIncluded : UpdateAutonomousDatabaseDetails.LicenseModel.BringYourOwnLicense;
+            if(getADLicenseType(updateADDLicenseModel) != ad.getLicenseModel()) {
+                reqBuilder = reqBuilder.licenseModel(updateADDLicenseModel);
+                debugLog(LOGGER, "License Model to be updated.from:%s;to:%s", Level.FINE, ad.getLicenseModel().getValue(), licenseModelStr);
+                updateRequired = true;
+            }
+        }
+        if (ad.getIsAutoScalingEnabled().booleanValue() != autoScalingEnabled) {
+            reqBuilder = reqBuilder.isAutoScalingEnabled(autoScalingEnabled);
+            debugLog(LOGGER, "AutoScaling Enabled to be updated.from:%s;to:%s", Level.FINE, ad.getIsAutoScalingEnabled(), autoScalingEnabled);
+            updateRequired = true;
+        }
+
         if (!updateRequired) {
             throw new AutonomousDatabaseAdapter.UpdateNotRequiredException();
         }
@@ -238,6 +259,7 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
                     summary.getDataStorageSizeInTBs(),
                     summary.getDbName(),
                     getADBLicenseType(summary.getLicenseModel()),
+                    summary.getIsAutoScalingEnabled(),
                     summary.getFreeformTags(),
                     AutonomousDatabaseInstance.lifecycleState(summary.getLifecycleState().getValue()));
         }
@@ -254,6 +276,7 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
                     adbInstance.getDataStorageSizeInTBs(),
                     adbInstance.getDbName(),
                     getADBLicenseType(adbInstance.getLicenseModel()),
+                    adbInstance.getIsAutoScalingEnabled(),
                     adbInstance.getFreeformTags(),
                     AutonomousDatabaseInstance.lifecycleState(adbInstance.getLifecycleState().getValue()));
         }
@@ -282,6 +305,14 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
             case BringYourOwnLicense: return AutonomousDatabaseAdapter.LicenseModel.BYOL;
             case LicenseIncluded: return AutonomousDatabaseAdapter.LicenseModel.NEW;
             default: return AutonomousDatabaseAdapter.LicenseModel.UNKNOWN;
+        }
+    }
+
+    private AutonomousDatabase.LicenseModel getADLicenseType(UpdateAutonomousDatabaseDetails.LicenseModel upADDLicenseModel) {
+        switch (upADDLicenseModel) {
+            case BringYourOwnLicense: return AutonomousDatabase.LicenseModel.BringYourOwnLicense;
+            case LicenseIncluded: return AutonomousDatabase.LicenseModel.LicenseIncluded;
+            default: return AutonomousDatabase.LicenseModel.UnknownEnumValue;
         }
     }
 }

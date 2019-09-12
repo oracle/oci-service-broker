@@ -14,7 +14,7 @@ image:
   repository: iad.ocir.io/oracle/oci-service-broker
 
   # Tag of the image
-  tag:  1.2.1
+  tag:  1.3.0
 
   # The image pull policy
   pullPolicy: Always

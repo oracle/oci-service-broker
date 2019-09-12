@@ -229,6 +229,8 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             Integer storageSize = RequestUtil.getIntegerParameter(reqParams, REQ_PARAM_STORAGE_SIZE_TB, true);
             String password = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_PASSWORD);
             String licenseModelStr = RequestUtil.getNonEmptyStringParameter(reqParams, REQ_PARAM_LICENSE_MODEL);
+            boolean autoScalingEnabled = RequestUtil.getBooleanParameterDefaultValueFalse(reqParams,
+                    Constants.AUTOSCALING_ENABLED, false);
             Map<String, Map<String, Object>> definedTags = RequestUtil.getMapMapObjectParameter(reqParams, Constants
                     .DEFINED_TAGS, false);
             if (!(LicenseModel.NEW.toString().equalsIgnoreCase(licenseModelStr) || LicenseModel.BYOL.toString()
@@ -248,7 +250,8 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
             adbSvcData.putMetadata(Constants.DB_WORKLOAD_TYPE, getInstanceTypeString().toUpperCase());
 
             AutonomousDatabaseInstance autonomousDatabaseInstance = adbServiceClient.create(name, dbName,
-                    getDBWorkload(getInstanceTypeString()), cpuCount, storageSize, freeFormTags, definedTags, password, isLicenseIncluded);
+                    getDBWorkload(getInstanceTypeString()), cpuCount, storageSize, freeFormTags, definedTags, password,
+                    isLicenseIncluded, autoScalingEnabled);
 
             adbSvcData.setOcid(autonomousDatabaseInstance.getId());
             response.setStatusCode(HTTP_ACCEPTED);
@@ -297,6 +300,15 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         Integer cpuCount = RequestUtil.getIntegerParameter(params, REQ_PARAM_CPU_COUNT, false);
         Integer storageSize = RequestUtil.getIntegerParameter(params, REQ_PARAM_STORAGE_SIZE_TB, false);
         Map<String, String> tags = RequestUtil.getMapStringParameter(params, REQ_PARAM_TAGS, false);
+        String licenseModelStr = RequestUtil.getNonEmptyStringParameter(params, REQ_PARAM_LICENSE_MODEL);
+        boolean autoScalingEnabled = RequestUtil.getBooleanParameterDefaultValueFalse(params, Constants.AUTOSCALING_ENABLED, false);
+
+        if (licenseModelStr != null && (!(LicenseModel.NEW.toString().equalsIgnoreCase(licenseModelStr) || LicenseModel.BYOL.toString()
+                .equalsIgnoreCase(licenseModelStr)))) {
+            LOGGER.severe("Invalid License Model : " + licenseModelStr);
+            throw Errors.invalidParameter(REQ_PARAM_LICENSE_MODEL);
+        }
+
         if(!tags.isEmpty()) {
             tags.put(Constants.OSB_INSTANCE_ID_LABEL, instanceId);
         }
@@ -305,7 +317,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
                 .DEFINED_TAGS, false);
 
         try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
-            adbServiceClient.update(svcData.getOcid(), name, cpuCount, storageSize, tags, definedTags);
+            adbServiceClient.update(svcData.getOcid(), name, cpuCount, storageSize, tags, definedTags, licenseModelStr, autoScalingEnabled);
             response.setStatusCode(HTTP_ACCEPTED);
         } catch(UpdateNotRequiredException ue) {
             response.setStatusCode(HTTP_OK);
@@ -532,9 +544,11 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         Integer cpuCount = RequestUtil.getIntegerParameter(reqParams, REQ_PARAM_CPU_COUNT, false);
         Integer storageSize = RequestUtil.getIntegerParameter(reqParams, REQ_PARAM_STORAGE_SIZE_TB, false);
         String licenseModel = RequestUtil.getStringParameter(reqParams, REQ_PARAM_LICENSE_MODEL, false);
+        boolean isAutoScalingEnabled = RequestUtil.getBooleanParameterDefaultValueFalse(reqParams,
+                                                                        Constants.AUTOSCALING_ENABLED, false);
         if (instance.getDisplayName().equals(displayName) && instance.getCpuCoreCount() == cpuCount &&
                 instance.getStorageSizeInGBs() == storageSize && instance.getDbName().equals(dbName) && instance
-                .getLicenseModel().toString().equalsIgnoreCase(licenseModel)) {
+                .getLicenseModel().toString().equalsIgnoreCase(licenseModel) && instance.isAutoScalingEnabled() == isAutoScalingEnabled) {
             return true;
         }
         return false;
