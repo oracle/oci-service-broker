@@ -16,6 +16,7 @@ spec:
     cpuCount: 1
     storageSizeTBs: 1
     licenseType: new
+    autoScaling: false
     freeFormTags:
       testtag: demo
 #   definedTags:

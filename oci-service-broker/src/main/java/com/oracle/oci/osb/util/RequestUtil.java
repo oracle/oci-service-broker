@@ -71,6 +71,31 @@ public class RequestUtil {
     }
 
     /**
+     * Returns the value of parameter {@code key} that is of type Boolean. Throws
+     * an exception if {@code mandatory} is true and the value is empty or not
+     * present. Returns default value as FALSE.
+     *
+     * @param mapParameters
+     * @param key
+     * @param mandatory
+     * @return parameter value.
+     */
+    public static boolean getBooleanParameterDefaultValueFalse(Map mapParameters, String key, boolean mandatory) {
+        if (mapParameters != null) {
+            Object parameter = mapParameters.get(key);
+            if (parameter == null && mandatory) {
+                throw Errors.missingParameter(key);
+            }
+            if (parameter != null && !parameter.toString().trim().equals("")) {
+                return Boolean.valueOf(parameter.toString());
+            }
+            return Boolean.FALSE;
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    /**
      * Returns the value of parameter {@code key} that is of type String. Throws
      * an exception if the value is empty or not present.
      *

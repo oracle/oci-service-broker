@@ -17,6 +17,7 @@ spec:
     storageSizeTBs: 1
     password: s123456789S@
     licenseType: NEW
+    autoScaling: false
     freeFormTags:
       testtag: demo
 #   definedTags:

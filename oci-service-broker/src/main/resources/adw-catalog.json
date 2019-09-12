@@ -83,6 +83,10 @@
                           "type":"string"
                         }
                       }
+                    },
+                    "autoScaling": {
+                      "description": "AutoScaling Enabled",
+                      "type": "boolean"
                     }
                   }
                 }
@@ -104,6 +108,11 @@
                       "description": "Storage Size In TBs",
                       "type": "integer"
                     },
+                    "licenseType": {
+                      "description": "Use your existing database software licenses(BYOL) or Subscribe to new database software licenses and the Database Cloud Service",
+                      "type": "string",
+                      "pattern": "^(byol|new)$"
+                    },
                     "freeFormTags": {
                       "description": "Free form tags",
                       "type": "object",
@@ -120,6 +129,10 @@
                           "type":"string"
                         }
                       }
+                    },
+                    "autoScaling": {
+                      "description": "AutoScaling Enabled",
+                      "type": "boolean"
                     }
                   }
                 }
