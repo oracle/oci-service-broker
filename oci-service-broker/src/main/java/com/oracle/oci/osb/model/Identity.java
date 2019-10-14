@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Identity {
@@ -20,7 +21,7 @@ public class Identity {
     @JsonProperty("groups")
     private List<String> groups = null;
     @JsonProperty("extra")
-    private Extra extra;
+    private Map<String,List<String>> extra;
 
     @JsonProperty("username")
     public String getUsername() {
@@ -53,12 +54,12 @@ public class Identity {
     }
 
     @JsonProperty("extra")
-    public Extra getExtra() {
+    public Map<String,List<String>> getExtra() {
         return extra;
     }
 
     @JsonProperty("extra")
-    public void setExtra(Extra extra) {
+    public void setExtra(Map<String,List<String>> extra) {
         this.extra = extra;
     }
 }

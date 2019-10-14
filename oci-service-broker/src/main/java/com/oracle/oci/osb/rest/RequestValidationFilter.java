@@ -63,9 +63,11 @@ public class RequestValidationFilter implements ContainerRequestFilter {
                     //Ignore as error  will be thrown further down.
                 }
             }
+            LOGGER.fine("Invalid value for Broker API version: " + version);
             abortWithError(ctx, Errors.brokerAPIVersionHeaderInvalid(),
                     "Invalid value for Broker API version: " + version);
         } else {
+            LOGGER.fine("Broker API Version header missing in request");
             abortWithError(ctx, Errors.brokerAPIVersionHeaderMissing(),
                     "Broker API Version header missing in request");
         }
@@ -78,11 +80,13 @@ public class RequestValidationFilter implements ContainerRequestFilter {
         }
         String originatingIdentity = ctx.getHeaderString(Constants.IDENTITY_HEADER);
         if (originatingIdentity == null) {
+            LOGGER.fine("Broker Originating Identity header missing in request");
             abortWithError(ctx, Errors.brokerOriginatingIdentityHeaderMissing(),
                     "Broker Originating Identity header missing in request");
         }
         Identity identity = parseIdentity(originatingIdentity);
         if (identity == null) {
+            LOGGER.fine("Invalid value for header Broker Originating Identity: " + originatingIdentity);
             abortWithError(ctx, Errors.brokerOriginatingIdentityHeaderInvalid(),
                     "Invalid value for Broker Originating Identity: " + originatingIdentity);
         }
