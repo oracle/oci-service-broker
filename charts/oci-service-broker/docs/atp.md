@@ -51,18 +51,18 @@ Allow group <SERVICE_BROKER_GROUP> to manage autonomous-database in compartment 
 
 To provision, an ATP service user needs to provide the following details:
 
-| Parameter        | Description                                                         | Type   | Mandatory |
-| ---------------- | ------------------------------------------------------------------- | ------ | --------- |
-| `name`           | The display name for the ATP instance.                              | string | yes       |
-| `dbName`         | Database Name.                                                      | string | yes       |
-| `compartmentId`  | The OCI compartment where the ATP instance will be provisioned.     | string | yes       |
-| `cpuCount`       | Number of CPU cores to have.                                        | int    | yes       |
-| `storageSizeTBs` | Size of the DB Storage in Terrabytes.                               | int    | yes       |
-| `password`       | ATP Service will pre-provision a DB Admin user when it provisions an ATP instance. The user needs to provide a password to be set for this Admin user.<br>The OCI ATP service requires the password to satisfy the below rules.<br><ul><li>The length should be 12 to 18 characters.</li><li>A password must include an upper case, lower case, and special character.</li></ul> | string | yes       |
-| `licenseType`    | Use your existing database software licenses(BYOL) or Subscribe to new database software licenses and the Database Cloud Service.<br>Valid values are:<ul><li>BYOL</li><li>NEW</li></ul>.                         | string | yes       |
-| `autoScaling`    | The flag to enable auto-scaling in ATP Instance. Allows system to use up to three times the provisioned number of cores as the workload increases. By default, this flag is set to false.                    | boolean| no        |
-| `freeFormTags`   | free form tags that are to be used for tagging the ATP instance.    | object | no        |
-| `definedTags`    | The defined tags that are to be used for tagging the ATP instance.  | object | no        |
+| Parameter             | Description                                                         | Type   | Mandatory |
+| --------------------- | ------------------------------------------------------------------- | ------ | --------- |
+| `name`                | The display name for the ATP instance.                              | string | yes       |
+| `dbName`              | Database Name.                                                      | string | yes       |
+| `compartmentId`       | The OCI compartment where the ATP instance will be provisioned.     | string | yes       |
+| `cpuCount`            | Number of CPU cores to have.                                        | int    | yes       |
+| `storageSizeTBs`      | Size of the DB Storage in Terrabytes.                               | int    | yes       |
+| `password`            | ATP Service will pre-provision a DB Admin user when it provisions an ATP instance. The user needs to provide a password to be set for this Admin user. The update of password using OCI Service Broker is not supported. Any changes to password after instance provisioning is ignored. <br>The OCI ATP service requires the password to satisfy the below rules.<br><ul><li>The length should be 12 to 18 characters.</li><li>A password must include an upper case, lower case, and special character.</li></ul> | string | yes       |
+| `licenseType`         | Use your existing database software licenses(BYOL) or Subscribe to new database software licenses and the Database Cloud Service.<br>Valid values are:<ul><li>BYOL</li><li>NEW</li></ul>.                         | string | yes       |
+| `autoScaling`         | The flag to enable auto-scaling in ATP Instance. Allows system to use up to three times the provisioned number of cores as the workload increases. By default, this flag is set to false.                    | boolean| no        |
+| `freeFormTags`        | free form tags that are to be used for tagging the ATP instance.    | object | no        |
+| `definedTags`         | The defined tags that are to be used for tagging the ATP instance.  | object | no        |
 
 ## Using an Existing ATP Service Instance
 

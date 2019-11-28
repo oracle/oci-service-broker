@@ -85,23 +85,25 @@ OCI Service Broker uses the OCI user credentials only for authenticating the cal
 
 ### Policies to allow access to Services
 
-In OCI by default, access to all resources for an user is denied. The tenancy administrator is required to explicitly whitelist a user to have access for the required resources. Below table lists the services supported by OCI Service Broker and the policy statement required in order for the service broker to manage the service.
+In OCI by default, access to all resources for an user is denied. The tenancy administrator is required to explicitly whitelist a user to have access for the required resources. It is strongly recommended to restrict access for the user used by OCI Service Broker to only region in which OCI Service Broker is expected to manage resources.
+
+Below table lists the services supported by OCI Service Broker and the policy statement required in order for the service broker to manage the service.
 
 | Service-Name | [Verbs](https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/policyreference.htm?Highlight=policy#Verbs) | [Resources-Types](https://docs.cloud.oracle.com/iaas/Content/Identity/Reference/policyreference.htm?Highlight=policy#Resource) | Sample Policy Statement |
 | ------------ | ----- | --------------- | ----------------------- |
-| Autonomous Transaction Processing (ATP) |`manage` |`autonomous-database` |Allow group service-broker-group to manage  autonomous-database |
-| Autonomous Data Warehouse (ADW) |`manage` |`autonomous-data-warehouse` |Allow group service-broker-group to manage autonomous-data-warehouse |
-| Objectstore Buckets |`manage` |`buckets` |Allow group service-broker-group to manage buckets |  
+| Autonomous Database (ATP/ADW) |`manage` |`autonomous-database` |Allow group service-broker-group to manage  autonomous-database where request.region='<region_short_id>'|
+| Objectstore Buckets |`manage` |`buckets` |Allow group service-broker-group to manage buckets where request.region='<region_short_id>'|
+| Streaming | `manage` | `streams` | Allow group service-broker-group to manage streams where request.region='<region_short_id>'|
 
-### Restrict the permissions only to the required Compartments
+### Restrict the permissions only to the required Compartments and Region
 
-While creating the policies to allow OCI Service Broker user to manage services, it is important to consider restricting those permissions to only the required compartment(s).  This can be done by adding compartment name in the policy.
+While creating the policies to allow OCI Service Broker user to manage services, it is important to consider restricting those permissions to only the required compartment(s) and region.  This can be done by adding compartment name and region in the policy.
 
 **Example:**
 
-`Allow group service-broker-group to manage autonomous-database in compartment service-broker`
+`Allow group service-broker-group to manage autonomous-database in compartment service-broker where request.region='phx''`
 
-The above policy provides access for group `service-broker-group` to manage ATP only in compartment `service-broker`.
+The above policy provides access for group `service-broker-group` to manage ATP only in compartment `service-broker` in region `US West (Phoenix)`.
 
 ## Limit access to OCI Service Broker endpoint using Networkpolicy
 
