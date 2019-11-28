@@ -83,7 +83,7 @@ Service Binding is optional in case of this service. OCI User credentials can be
 
 | Parameter        | Description                                                  | Type   |
 | ---------------- | ------------------------------------------------------------ | ------ |
-| preAuthAccessUri | The [Pre-Authenticated Access URI](https://docs.cloud.oracle.com/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm?tocpath=Services%7CObject%20Storage%7C_____5) of the bucket | string |
+| preAuthAccessUri | The [Pre-Authenticated Access URI](https://docs.cloud.oracle.com/iaas/Content/Object/Tasks/usingpreauthenticatedrequests.htm?tocpath=Services%7CObject%20Storage%7C_____5) of the bucket. This URI does not include the oci endpoint URL which needs to appended by the user before making the call. | string |
 
 ## Example
 
