@@ -109,7 +109,7 @@ kubectl -n <NAMESPACE_OF_OCI_SERVICE_BROKER> get secret ocicredentials -o yaml
 In the helm install command the secret should have been passed as shown below:
 
  ```bash
- helm install charts/oci-service-broker/.  --name oci-service-broker \
+ helm install oci-service-broker charts/oci-service-broker/. \
   --set ociCredentials.secretName=ocicredentials \
   ...
  ```
