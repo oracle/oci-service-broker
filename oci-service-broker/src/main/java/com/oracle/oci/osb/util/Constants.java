@@ -76,4 +76,5 @@ public class Constants {
     public static final String PROVISIONING = "provisioning";
     public static final String OCID = "ocid";
     public static final String AUTOSCALING_ENABLED = "autoScaling";
+    public static final String STREAM_POOL_ID = "streampoolId";
 }

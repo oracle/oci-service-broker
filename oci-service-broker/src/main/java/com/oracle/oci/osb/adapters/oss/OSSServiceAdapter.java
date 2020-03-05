@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oracle.oci.osb.adapter.ServiceAdapter;
 import com.oracle.oci.osb.model.*;
+import com.oracle.oci.osb.model.Error;
 import com.oracle.oci.osb.ociclient.SystemPropsAuthProvider;
 import com.oracle.oci.osb.store.BindingData;
 import com.oracle.oci.osb.store.ServiceData;
@@ -31,12 +32,17 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
+
+import static com.oracle.oci.osb.util.Utils.getLogger;
 
 /**
  * OSSServiceAdapter provides implementation to provision and manage
  * Oracle Streaming Service instances.
  */
 public class OSSServiceAdapter implements ServiceAdapter {
+
+    private static final Logger LOGGER = getLogger(OSSServiceAdapter.class);
 
     public static final String PARTITIONS = "partitions";
     private static final String STREAM_ID = "streamId";
@@ -49,8 +55,8 @@ public class OSSServiceAdapter implements ServiceAdapter {
 
     public OSSServiceAdapter() {
         super();
-        streamAdminClient = new StreamAdminClient(new SystemPropsAuthProvider().getAuthProvider());
-        streamAdminClient.setEndpoint("https://streams." + System.getProperty(Constants.REGION_ID) + ".streaming.oci.oraclecloud.com");
+        streamAdminClient = StreamAdminClient.builder().build(new SystemPropsAuthProvider().getAuthProvider());
+        streamAdminClient.setRegion(System.getProperty(Constants.REGION_ID));
     }
 
     @Override
@@ -172,14 +178,25 @@ public class OSSServiceAdapter implements ServiceAdapter {
         Map mapParameters = validateParamsExists(body.getParameters());
 
         String streamName = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.NAME);
-        String compartmentId = RequestUtil.getNonEmptyStringParameter(mapParameters, Constants.COMPARTMENT_ID);
         Integer partitions = RequestUtil.getIntegerParameter(mapParameters, PARTITIONS, true);
+        String streampoolId = RequestUtil.getStringParameter(mapParameters, Constants.STREAM_POOL_ID, false);;
+        String compartmentId = RequestUtil.getStringParameter(mapParameters, Constants.COMPARTMENT_ID, false);
         Map<String, Map<String, Object>> definedTags = RequestUtil.getMapMapObjectParameter(mapParameters,
                         Constants.DEFINED_TAGS, false);
 
+        if(streampoolId == null && compartmentId == null) {
+            LOGGER.info("Both CompartmentId and StreamPoolId cannot be null");
+            throw Errors.missingParameters();
+        }
+
         CreateStreamDetails.Builder createStreamBuilder = CreateStreamDetails.builder().name(streamName)
-                .compartmentId(compartmentId).partitions(partitions).definedTags(definedTags).freeformTags
-                        (freeFormTags);
+                .partitions(partitions).definedTags(definedTags).freeformTags(freeFormTags);
+
+        if(streampoolId != null) {
+            createStreamBuilder.streamPoolId(streampoolId);
+        } else {
+            createStreamBuilder.compartmentId(compartmentId);
+        }
 
         CreateStreamResponse createResponse = streamAdminClient.createStream(CreateStreamRequest.builder()
                 .createStreamDetails(createStreamBuilder.build()).build());
