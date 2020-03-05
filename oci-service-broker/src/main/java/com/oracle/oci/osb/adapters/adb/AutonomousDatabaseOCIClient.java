@@ -96,7 +96,7 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
      * @param autoScalingEnabled flag to enable autoscaling
      * @return AutonomousDatabase
      */
-    public AutonomousDatabaseInstance update(String adOCID, String displayName, int cpuCount, int StorageSize,
+    public AutonomousDatabaseInstance update(String adOCID, String displayName, String password, int cpuCount, int StorageSize,
                                              Map<String, String> tags, Map<String, Map<String, Object>> definedTags,
                                              String licenseModelStr, boolean autoScalingEnabled) {
         AutonomousDatabase ad = getADInstance(adOCID);
@@ -107,6 +107,11 @@ public class AutonomousDatabaseOCIClient implements AutoCloseable{
         if (!Utils.isNullOrEmptyString(displayName) && !ad.getDisplayName().equals(displayName)) {
             reqBuilder = reqBuilder.displayName(displayName);
             debugLog(LOGGER, "DisplayName to be updated.from:%s;to:%s", Level.FINE, ad.getDisplayName(), displayName);
+            updateRequired = true;
+        }
+        if (!Utils.isNullOrEmptyString(password)) {
+            reqBuilder = reqBuilder.adminPassword(password);
+            debugLog(LOGGER, "Admin password to be updated.", Level.FINE);
             updateRequired = true;
         }
         if (cpuCount > 0 && ad.getCpuCoreCount() != cpuCount) {

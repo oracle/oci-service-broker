@@ -297,6 +297,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
         Map<String, Object> params = (Map<String, Object>) body.getParameters();
 
         String name = RequestUtil.getStringParameter(params, REQ_PARAM_NAME, false);
+        String password = RequestUtil.getStringParameter(params, REQ_PARAM_PASSWORD, false);
         Integer cpuCount = RequestUtil.getIntegerParameter(params, REQ_PARAM_CPU_COUNT, false);
         Integer storageSize = RequestUtil.getIntegerParameter(params, REQ_PARAM_STORAGE_SIZE_TB, false);
         Map<String, String> tags = RequestUtil.getMapStringParameter(params, REQ_PARAM_TAGS, false);
@@ -317,7 +318,7 @@ public abstract class AutonomousDatabaseAdapter implements ServiceAdapter {
                 .DEFINED_TAGS, false);
 
         try (AutonomousDatabaseOCIClient adbServiceClient = new AutonomousDatabaseOCIClient(provider, compartmentId)) {
-            adbServiceClient.update(svcData.getOcid(), name, cpuCount, storageSize, tags, definedTags, licenseModelStr, autoScalingEnabled);
+            adbServiceClient.update(svcData.getOcid(), name, password, cpuCount, storageSize, tags, definedTags, licenseModelStr, autoScalingEnabled);
             response.setStatusCode(HTTP_ACCEPTED);
         } catch(UpdateNotRequiredException ue) {
             response.setStatusCode(HTTP_OK);

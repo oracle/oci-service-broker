@@ -51,6 +51,10 @@
                       "description": "The number of partition in the stream",
                       "type": "integer"
                     },
+                    "streampoolId": {
+                      "description": "The OCID of the stream pool that contains the stream",
+                      "type": "string"
+                    },
                     "freeFormTags": {
                       "description": "Free form tags",
                       "type": "object",
