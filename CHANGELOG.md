@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+[1.5.0]
+
+- Adding support for Chuncheon (YNY), Hyderabad (HYD) and  Sanjose (SJC) regions
+- Minor Bug Fix to make OCI Service Broker compatible with 1.16+
+
 [1.4.0]
 
 - Adding support for Osaka (KIX), Melbourne (MEL), Amsterdam (AMS), Jeddah (JED), Montreal (YUL) regions
