@@ -11,8 +11,7 @@ replicaCount: 1
 # Image of the broker
 image:
   # Repository of the image
-  #repository: iad.ocir.io/oracle/oci-service-broker
-  repository: iad.ocir.io/oci-cnp-dev/oci-service-broker
+  repository: iad.ocir.io/oracle/oci-service-broker
 
   # Tag of the image
   tag:  1.5.0
