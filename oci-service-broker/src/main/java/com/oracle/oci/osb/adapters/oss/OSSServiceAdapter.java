@@ -96,7 +96,7 @@ public class OSSServiceAdapter implements ServiceAdapter {
         ListStreamsResponse listResponse = streamAdminClient.listStreams(ListStreamsRequest.builder()
                 .compartmentId(compartmentId).build());
         Optional<StreamSummary> summary = listResponse.getItems().stream()
-                .filter(item -> item.getName().equals(streamName)).findFirst();
+                .filter(item -> item.getName().equals(streamName) && item.getLifecycleState() != StreamSummary.LifecycleState.Deleted).findFirst();
         if (summary.isPresent()) {
             StreamSummary stream = summary.get();
             Map<String, String> freeFormTagsExisting = stream.getFreeformTags();
