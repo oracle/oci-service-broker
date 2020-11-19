@@ -30,14 +30,14 @@ apply plugin: 'maven-publish'
 archivesBaseName = 'oci-service-broker'
 
 // Sometimes, the version has to be overridden from command line
-version = project.hasProperty('version_num') ? project.getProperty('version_num') : '1.5.0'
+version = project.hasProperty('version_num') ? project.getProperty('version_num') : '1.5.1'
 ext.dockerGroup = 'iad.ocir.io/oci-cnp-dev'
 mainClassName = 'com.oracle.oci.osb.Broker'
 
 sourceCompatibility = 10
 
 ext {
-    ociSdkVersion = "1.22.1"
+    ociSdkVersion = "1.26.0"
     jerseyVersion = "2.27"
     hk2Version = "2.5.0-b42"
     hamcrestVersion = "1.3"
