@@ -138,9 +138,19 @@ catalog_name=$($KGP -n $CATALOG_NS | grep "catalog-apiserver" | awk '{split($0,a
 ##### Helm List
 border_print
 echo -e "Helm List of OCI Service Broker\n"
-helm ls --namespace=$OSB_NS | grep "$osb_name" 
+if [[ "${HELM_VERSION}" == "2" ]]; then
+	helm ls $osb_name --namespace=$OSB_NS
+fi
+if [[ "${HELM_VERSION}" == "3" ]]; then
+	helm ls --namespace=$OSB_NS | grep "$osb_name"
+fi
 echo -e "\nHelm List of Service Catalog\n"
-helm ls --namespace=$CATALOG_NS | grep "$catalog_name" 
+if [[ "${HELM_VERSION}" == "2" ]]; then
+	helm ls $catalog_name --namespace=$CATALOG_NS
+fi
+if [[ "${HELM_VERSION}" == "3" ]]; then
+	helm ls --namespace=$CATALOG_NS | grep "$catalog_name"
+fi
 
 if [ ! -z $osb_pod_status ]
 then
