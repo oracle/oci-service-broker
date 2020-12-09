@@ -4,6 +4,7 @@
 OSB="OCI Service Broker"
 KGP="kubectl get pods"
 
+HELM_VERSION=$(helm version | sed -e 's/^\(.*{Version:"\)v\([0-9]*\).\([0-9\.]*\)".*/\2/')
 
 #Function for Priting the Start of Diagnostic Tool
 function start_tool()
@@ -40,7 +41,12 @@ function collect_logs ()
     # OCI Service Broker Logs
     kubectl -n $3 logs $5 -c oci-service-broker > $fol/osb_pod.log
     # Helm ls logs
-    helm ls $2 --namespace $3 > $fol/helm_ls.log
+	if [[ "${HELM_VERSION}" == "2" ]]; then
+		helm ls $2 --namespace $3 > $fol/helm_ls.log
+	fi
+	if [[ "${HELM_VERSION}" == "3" ]]; then
+		helm ls --namespace $3 | grep "$2" > $fol/helm_ls.log
+	fi
     # Helm Values Changed Logs
     helm get values $2 > $fol/helm_values_changed.log
     # Kubectl get all for OCI Service Broker Namespace Logs
@@ -132,9 +138,9 @@ catalog_name=$($KGP -n $CATALOG_NS | grep "catalog-apiserver" | awk '{split($0,a
 ##### Helm List
 border_print
 echo -e "Helm List of OCI Service Broker\n"
-helm ls $osb_name --namespace=$OSB_NS
+helm ls --namespace=$OSB_NS | grep "$osb_name" 
 echo -e "\nHelm List of Service Catalog\n"
-helm ls $catalog_name --namespace=$CATALOG_NS
+helm ls --namespace=$CATALOG_NS | grep "$catalog_name" 
 
 if [ ! -z $osb_pod_status ]
 then
