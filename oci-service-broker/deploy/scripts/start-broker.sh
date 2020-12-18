@@ -94,6 +94,7 @@ exec java -cp "${LIB_DIR}/*" ${JVM_PROPS} -Dport="$PORT" -Dtenancy=${TENANCY} -D
                        -DapiServerCaCert="${API_SERVER_CA_CERTS}" -DtlsEnabled="${TLS_ENABLED}" ${TLS_PROPS} -DstoreType="${STORE_TYPE}" -Detcd.servers="${ETCD_SERVERS}"\
                        -DetcdTlsEnabled="${ETCD_CLIENT_TLS_ENABLED}" -DCAPath="/oci-service-broker/etcdTlsSecret/etcd-client-ca.crt"\
                        -DetcdClientCert="/oci-service-broker/etcdTlsSecret/etcd-client.crt"\
-                       -DetcdClientKey="/oci-service-broker/etcdTlsSecret/etcd-client.key" ${TAGS} -Dk8sApiTokenFile="/var/run/secrets/kubernetes.io/serviceaccount/token"\
+                       -DetcdClientKey="/oci-service-broker/etcdTlsSecret/etcd-client.key" ${TAGS} -Dk8sApiTokenFile="/var/run/secrets/kubernetes.io/serviceaccount/token" \
+                       -Djdk.tls.client.protocols=TLSv1.2 \
                          com.oracle.oci.osb.Broker
 
