@@ -43,7 +43,7 @@
 Add the Kubernetes Service Catalog helm repository:
 
 ```bash
-helm repo add svc-cat https://svc-catalog-charts.storage.googleapis.com
+helm repo add svc-cat https://kubernetes-sigs.github.io/service-catalog
 ```
 
 Install the Kubernetes Service Catalog helm chart:
