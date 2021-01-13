@@ -288,7 +288,8 @@ Refer [Restrict access to Service Catalog resources using RBAC](security.md#rest
 Sample files for various services are available under [`oci-service-broker/samples`](../samples) directory inside the charts. The below command extracts chart that contains the sample files.
 
 ```bash
-curl -LO https://github.com/oracle/oci-service-broker/releases/download/v1.5.2/oci-service-broker-1.5.2.tgz | tar xz
+curl -LO https://github.com/oracle/oci-service-broker/releases/download/v1.5.2/oci-service-broker-1.5.2.tgz
+tar -xvf oci-service-broker-1.5.2.tgz
 ```
 
 Create a `ClusterServiceBroker` resource with OCI Service Broker URL to register the broker. Use the below register yaml file after updating the namespace of the OCI Service Broker.
