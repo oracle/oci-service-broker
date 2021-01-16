@@ -3,7 +3,7 @@
 # Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
 #
 # Allow access to OCI Service Broker from "any" pods running in the namespace that
-# contians label "app=service-catalog".
+# contains label "app=service-catalog".
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
