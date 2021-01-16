@@ -47,6 +47,7 @@ public class OSSServiceAdapter implements ServiceAdapter {
     public static final String PARTITIONS = "partitions";
     private static final String STREAM_ID = "streamId";
     private static final String MESSAGE_ENDPOINT = "messageEndpoint";
+    private static final String STREAMPOOL_ID = "streamPoolId";
 
     private StreamAdminClient streamAdminClient;
 
@@ -315,6 +316,7 @@ public class OSSServiceAdapter implements ServiceAdapter {
                 .put(STREAM_ID, svcData.getOcid());
         //Adding the message endpoint to credentails for each bind request
         getStreamMessageEndpoint(svcData.getOcid(), credentials);
+        getStreamStreamPoolId(svcData.getOcid(), credentials);
         binding.setCredentials(credentials);
         binding.setStatusCode(Response.Status.CREATED.getStatusCode());
 
@@ -390,6 +392,12 @@ public class OSSServiceAdapter implements ServiceAdapter {
         Stream stream = streamAdminClient.getStream(GetStreamRequest.builder().streamId(ocid).build()).getStream();
         if (stream != null) {
             credMap.put(MESSAGE_ENDPOINT, stream.getMessagesEndpoint());
+        }
+    }
+    private void getStreamStreamPoolId(String ocid, Map<String, String> credMap) {
+        Stream stream = streamAdminClient.getStream(GetStreamRequest.builder().streamId(ocid).build()).getStream();
+        if (stream != null) {
+            credMap.put(STREAMPOOL_ID, stream.getStreamPoolId());
         }
     }
 }
