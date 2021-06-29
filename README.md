@@ -29,7 +29,7 @@ See the [Documentation](charts/oci-service-broker/README.md#oci-service-broker) 
 The OCI Service Broker is packaged as Helm chart for making it easy to install in Kubernetes Clusters. The chart can be downloaded from below URL.
 
 ```
-https://github.com/oracle/oci-service-broker/releases/download/v1.5.2/oci-service-broker-1.5.2.tgz
+https://github.com/oracle/oci-service-broker/releases/download/v1.6.0/oci-service-broker-1.6.0.tgz
 ```
 
 ## Samples
