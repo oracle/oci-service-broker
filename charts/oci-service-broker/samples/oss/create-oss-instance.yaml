@@ -13,5 +13,5 @@ spec:
    name: teststream
    compartmentId: CHANGE_COMPARTMENT_OCID_HERE
    partitions: CHANGE_PARTITION_COUNT_HERE
-# Use streampoolId for creating stream associated with a streampool. Do not use compartmentId when using streampoolId
+#   Use streampoolId for creating stream associated with a streampool. 
 #   streampoolId: CHANGE_STREAM_POOL_OCID_HERE

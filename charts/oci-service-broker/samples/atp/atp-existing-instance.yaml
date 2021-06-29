@@ -11,6 +11,6 @@ spec:
   clusterServicePlanExternalName: standard
   parameters:
     name: osb-atp-existing-instance
-    ocid: "CHANGE_EXISTING_SERVICEINSTANCE_OCID_HERE"
-    compartmentId: "CHANGE_COMPARTMENT_OCID_HERE"
+    ocid: CHANGE_EXISTING_SERVICEINSTANCE_OCID_HERE
+    compartmentId: CHANGE_COMPARTMENT_OCID_HERE
     provisioning: false
